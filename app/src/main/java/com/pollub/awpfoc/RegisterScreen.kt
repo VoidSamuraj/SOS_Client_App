@@ -75,7 +75,6 @@ fun RegistrationScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
         )
 
-        Spacer(modifier = Modifier.height(100.dp))
         Button(
             onClick = { /* TODO: Logika rejestracji */ },
             modifier = Modifier
@@ -95,7 +94,7 @@ fun RegistrationScreen(modifier: Modifier = Modifier) {
 
         TextButton(
             onClick = { /* TODO: Logika przejścia do logowania */ },
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 100.dp)
         ) {
             Text(text = "Zaloguj się", color = Color(0xFF4A5061))
         }

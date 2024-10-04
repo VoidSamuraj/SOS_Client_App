@@ -95,7 +95,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
         Button(
             onClick = { /* TODO: Logika rejestracji */ },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
         ) {
             Text(text = "Załóż nowe konto", color = Color.White)
