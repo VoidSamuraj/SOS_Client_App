@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(modifier: Modifier = Modifier, onLoginPress: ()->Unit={}, navToRegister: ()->Unit={}, onRemindPasswordPress: ()->Unit={}) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
 
@@ -66,7 +66,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         )
 
         Button(
-            onClick = { /* TODO: Logika logowania */ },
+            onClick = onLoginPress ,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -76,7 +76,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         }
 
         Button(
-            onClick = { /* TODO: Logika logowania */ },
+            onClick = onRemindPasswordPress,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -94,7 +94,7 @@ fun LoginScreen(modifier: Modifier = Modifier) {
         )
 
         Button(
-            onClick = { /* TODO: Logika rejestracji */ },
+            onClick = navToRegister,
             modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
         ) {

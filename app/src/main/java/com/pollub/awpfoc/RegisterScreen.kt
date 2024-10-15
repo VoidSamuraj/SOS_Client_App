@@ -3,10 +3,8 @@ package com.pollub.awpfoc
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun RegistrationScreen(modifier: Modifier = Modifier) {
+fun RegistrationScreen(modifier: Modifier = Modifier, navToLogin: ()->Unit={}, onSignUp: ()->Unit={}) {
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
     val confirmPasswordState = remember { mutableStateOf("") }
@@ -76,7 +74,7 @@ fun RegistrationScreen(modifier: Modifier = Modifier) {
         )
 
         Button(
-            onClick = { /* TODO: Logika rejestracji */ },
+            onClick = onSignUp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
@@ -93,7 +91,7 @@ fun RegistrationScreen(modifier: Modifier = Modifier) {
         )
 
         TextButton(
-            onClick = { /* TODO: Logika przejścia do logowania */ },
+            onClick = navToLogin,
             modifier = Modifier.padding(bottom = 100.dp)
         ) {
             Text(text = "Zaloguj się", color = Color(0xFF4A5061))

@@ -1,5 +1,10 @@
 package com.pollub.awpfoc
 
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +24,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -32,36 +41,47 @@ import androidx.compose.ui.unit.sp
 
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier) {
+fun MainScreen(modifier: Modifier = Modifier, onLogout:()->Unit={}) {
 
-    val isActive=true
+    val isSystemConnected = remember{ mutableStateOf(false)}
+    val isSmartWatchConnected = remember{ mutableStateOf(false)}
+    val isSosActive = remember{ mutableStateOf(false)}
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFEFEFF4))
     ) {
-        TopBar()
+        TopBar(onLogout = onLogout)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        ConnectionStatus("Status połączenia z bazą", isActive = isActive)
-        ConnectionStatus("Status połączenia ze smartwatch", isActive = isActive)
+        ConnectionStatus("Status połączenia z bazą", isActive = isSystemConnected.value)
+        ConnectionStatus("Status połączenia ze smartwatch", isActive = isSmartWatchConnected.value)
 
         Spacer(modifier = Modifier.height(40.dp))
         Spacer(modifier = Modifier.weight(1f))
 
-        SOSButton(isActive = isActive)
+        SOSButton(
+            isSosActive = isSosActive,
+            onButtonClick = {
+                isSosActive.value=true
+            })
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        CallMenu(isVisible = isActive)
+        CallMenu(
+            isCancelButtonVisible = isSosActive.value,
+            onButtonClick = {
+                isSosActive.value=false
+            })
 
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
 @Composable
-fun TopBar() {
+fun TopBar(onLogout:()->Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,22 +94,16 @@ fun TopBar() {
             contentDescription = "Call",
             modifier = Modifier.size(32.dp)
         )
-        Column(modifier = Modifier.padding(start = 8.dp)) {
-            Text(
-                text = "ID: Klient665 (Karol)",
-                color = Color.White,
-                fontSize = 18.sp
-            )
-            Text(
-                text = "Zalogowany",
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 14.sp
-            )
-        }
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            text = "ID: Klient665 (Karol)",
+            color = Color.White,
+            fontSize = 18.sp
+        )
 
         Spacer(modifier = Modifier.weight(1f))
         Button(
-            onClick = { /*TODO: Implement logout*/ },
+            onClick = onLogout,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061)),
             shape = CircleShape,
         ) {
@@ -108,11 +122,11 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.wrapContentHeight().weight(1f),) {
+        Column(modifier = Modifier.wrapContentHeight().weight(1f)) {
             Text(
-            text = label,
-            fontSize = 16.sp
-        )
+                text = label,
+                fontSize = 16.sp
+            )
             Text(
                 text = if(isActive) "Aktywny" else "Nie aktywny",
                 fontSize = 14.sp,
@@ -125,7 +139,7 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
                 .size(24.dp)
                 .clip(CircleShape)
                 .background(Color.Gray)
-            
+
         ){
             Box(
                 modifier = Modifier
@@ -140,39 +154,63 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
 }
 
 @Composable
-fun SOSButton(isActive: Boolean) {
+fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: ()->Unit) {
+
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val buttonColor = infiniteTransition.animateColor(
+        initialValue = Color.Red,
+        targetValue = Color.Black,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ), label = "buttonColor"
+    )
+    val shadowColor = infiniteTransition.animateColor(
+        initialValue = Color.Red.copy(alpha = .8f),
+        targetValue = Color.Transparent,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ), label = "shadowColor"
+    )
+
     Button(
-        onClick = { /*TODO: SOS action*/ },
-        colors = ButtonDefaults.buttonColors(containerColor =  if(isActive) Color(0xFFFF6754) else Color(0xFF4A5061)),
+        onClick = onButtonClick,
+        colors = ButtonDefaults.buttonColors(containerColor =  if(isSosActive.value) buttonColor.value else Color(0xFF4A5061)),
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 32.dp)
             .height(200.dp)
+            .drawWithContent {
+                if(isSosActive.value)
+                    drawNeonStroke(20.dp,30.dp,shadowColor.value)
+                drawContent()
+            }
     ) {
-        Text(text = if(isActive) "SOS AKTYWNY" else "SOS", color = if(isActive) Color(0xFF4A5061) else Color.White , fontSize = 36.sp, textAlign = TextAlign.Center)
+        Text(text = if(isSosActive.value) "SOS AKTYWNY" else "SOS", color = Color.White , fontSize = 36.sp, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
-fun CallMenu(isVisible: Boolean) {
+fun CallMenu(isCancelButtonVisible: Boolean, onButtonClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-
-        if(isVisible)
-        Button(
-            onClick = { /*TODO: SOS action*/ },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061)),
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier
-                .height(80.dp)
-        ) {
-            Text(text = "ANULUJ SOS", color = Color.White, fontSize = 18.sp, textAlign = TextAlign.Center)
-        }else {
+        if(isCancelButtonVisible)
+            Button(
+                onClick = onButtonClick,
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061)),
+                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier
+                    .height(80.dp)
+            ) {
+                Text(text = "ANULUJ SOS", color = Color.White, fontSize = 18.sp, textAlign = TextAlign.Center)
+            }
+        else
             Spacer(modifier = Modifier.weight(1f))
-        }
 
         Button(
             onClick = { /*TODO: Call action*/ },
