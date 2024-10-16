@@ -1,18 +1,17 @@
-package com.pollub.awpfoc
+package com.pollub.awpfoc.ui.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,10 +23,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+/**
+ * Composable function for the registration screen where users can enter their email and password to create an account.
+ *
+ * The screen includes fields for email, password, and password confirmation, along with buttons for signing up
+ * and navigating back to the login screen.
+ *
+ * @param modifier Optional [Modifier] to be applied to the root element.
+ * @param navToLogin Lambda function to be executed when navigating back to the login screen.
+ * @param onSignUp Lambda function to be executed when the sign-up button is pressed.
+ */
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, onLoginPress: ()->Unit={}, navToRegister: ()->Unit={}, onRemindPasswordPress: ()->Unit={}) {
+fun RegistrationScreen(
+    modifier: Modifier = Modifier,
+    navToLogin: ()->Unit={},
+    onSignUp: ()->Unit={}
+) {
+
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
+    val confirmPasswordState = remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -38,13 +53,13 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginPress: ()->Unit={}, navToR
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Zaloguj",
+            text = "Rejestracja",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Text(
-            text = "Aby się zalogować wprowadź swój adres e-mail i hasło",
+            text = "Aby założyć konto wprowadź swój adres e-mail i hasło",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -60,51 +75,47 @@ fun LoginScreen(modifier: Modifier = Modifier, onLoginPress: ()->Unit={}, navToR
         OutlinedTextField(
             value = passwordState.value,
             onValueChange = { passwordState.value = it },
-            label = { Text("Hasło*") },
+            label = { Text("Wprowadź hasło*") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        )
+
+        OutlinedTextField(
+            value = confirmPasswordState.value,
+            onValueChange = { confirmPasswordState.value = it },
+            label = { Text("Powtórz hasło*") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
         )
 
         Button(
-            onClick = onLoginPress ,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
-        ) {
-            Text(text = "Zaloguj", color = Color.White)
-        }
-
-        Button(
-            onClick = onRemindPasswordPress,
+            onClick = onSignUp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
         ) {
-            Text(text = "Zapomniałem hasła", color = Color.White)
+            Text(text = "Załóż konto", color = Color.White)
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "Jeżeli nie posiadasz konta zarejestruj się",
+            text = "Posiadasz konto? Zaloguj się",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Button(
-            onClick = navToRegister,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+        TextButton(
+            onClick = navToLogin,
+            modifier = Modifier.padding(bottom = 100.dp)
         ) {
-            Text(text = "Załóż nowe konto", color = Color.White)
+            Text(text = "Zaloguj się", color = Color(0xFF4A5061))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewLoginScreen() {
-    LoginScreen()
+fun PreviewRegistrationScreen() {
+    RegistrationScreen()
 }

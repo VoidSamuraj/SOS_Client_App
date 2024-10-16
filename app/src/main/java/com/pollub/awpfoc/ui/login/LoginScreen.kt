@@ -1,17 +1,18 @@
-package com.pollub.awpfoc
+package com.pollub.awpfoc.ui.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,11 +24,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+
+/**
+ * Composable function for the login screen where users can enter their email and password to log in.
+ *
+ * The screen includes fields for email and password input, buttons for logging in, reminding the password,
+ * and navigating to the registration screen.
+ *
+ * @param modifier Optional [Modifier] to be applied to the root element.
+ * @param onLoginPress Lambda function to be executed when the login button is pressed.
+ * @param navToRegister Lambda function to be executed when the navigation to the registration screen is triggered.
+ * @param onRemindPasswordPress Lambda function to be executed when the remind password button is pressed.
+ */
 @Composable
-fun RegistrationScreen(modifier: Modifier = Modifier, navToLogin: ()->Unit={}, onSignUp: ()->Unit={}) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    onLoginPress: ()->Unit={},
+    navToRegister: ()->Unit={},
+    onRemindPasswordPress: ()->Unit={}
+) {
+
     val emailState = remember { mutableStateOf("") }
     val passwordState = remember { mutableStateOf("") }
-    val confirmPasswordState = remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -38,13 +56,13 @@ fun RegistrationScreen(modifier: Modifier = Modifier, navToLogin: ()->Unit={}, o
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Rejestracja",
+            text = "Zaloguj",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
         Text(
-            text = "Aby założyć konto wprowadź swój adres e-mail i hasło",
+            text = "Aby się zalogować wprowadź swój adres e-mail i hasło",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -60,47 +78,51 @@ fun RegistrationScreen(modifier: Modifier = Modifier, navToLogin: ()->Unit={}, o
         OutlinedTextField(
             value = passwordState.value,
             onValueChange = { passwordState.value = it },
-            label = { Text("Wprowadź hasło*") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = confirmPasswordState.value,
-            onValueChange = { confirmPasswordState.value = it },
-            label = { Text("Powtórz hasło*") },
+            label = { Text("Hasło*") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
         )
 
         Button(
-            onClick = onSignUp,
+            onClick = onLoginPress ,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+        ) {
+            Text(text = "Zaloguj", color = Color.White)
+        }
+
+        Button(
+            onClick = onRemindPasswordPress,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
         ) {
-            Text(text = "Załóż konto", color = Color.White)
+            Text(text = "Zapomniałem hasła", color = Color.White)
         }
 
+        Spacer(modifier = Modifier.height(20.dp))
         Text(
-            text = "Posiadasz konto? Zaloguj się",
+            text = "Jeżeli nie posiadasz konta zarejestruj się",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        TextButton(
-            onClick = navToLogin,
-            modifier = Modifier.padding(bottom = 100.dp)
+        Button(
+            onClick = navToRegister,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
         ) {
-            Text(text = "Zaloguj się", color = Color(0xFF4A5061))
+            Text(text = "Załóż nowe konto", color = Color.White)
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewRegistrationScreen() {
-    RegistrationScreen()
+fun PreviewLoginScreen() {
+    LoginScreen()
 }
