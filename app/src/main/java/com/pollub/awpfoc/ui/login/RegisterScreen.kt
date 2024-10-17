@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.pollub.awpfoc.ui.theme.AwpfocTheme
 
 /**
  * Composable function for the registration screen where users can enter their email and password to create an account.
@@ -55,14 +56,16 @@ fun RegistrationScreen(
         Text(
             text = "Rejestracja",
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         Text(
             text = "Aby założyć konto wprowadź swój adres e-mail i hasło",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         OutlinedTextField(
@@ -93,23 +96,24 @@ fun RegistrationScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text(text = "Załóż konto", color = Color.White)
+            Text(text = "Załóż konto", color = MaterialTheme.colorScheme.onSecondary)
         }
 
         Text(
             text = "Posiadasz konto? Zaloguj się",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         TextButton(
             onClick = navToLogin,
             modifier = Modifier.padding(bottom = 100.dp)
         ) {
-            Text(text = "Zaloguj się", color = Color(0xFF4A5061))
+            Text(text = "Zaloguj się", color = MaterialTheme.colorScheme.onTertiaryContainer)
         }
     }
 }
@@ -117,5 +121,7 @@ fun RegistrationScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewRegistrationScreen() {
-    RegistrationScreen()
+    AwpfocTheme(dynamicColor = false) {
+        RegistrationScreen()
+    }
 }

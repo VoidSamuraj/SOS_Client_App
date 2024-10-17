@@ -4,10 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -15,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
@@ -43,7 +45,7 @@ fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
         Dialog(onDismissRequest = { showDialog.value = false }) {
             Box(
                 modifier = Modifier
-                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(12.dp))
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -51,28 +53,33 @@ fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = "Aby zadzwonić, musisz udzielić aplikacji zezwolenia na wykonywanie połączeń.",
-                        textAlign = TextAlign.Center)
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(text = "Lub zadzwonić pod poniższy numer.",
-                        textAlign = TextAlign.Center)
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimary)
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Button(modifier = Modifier,
+                    Button(modifier = Modifier.height(80.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                         onClick = {
                             clipboardManager.setText(AnnotatedString(supportPhoneNumber))
                         }) {
-                        Box(modifier = Modifier.height(60.dp)){
+                        Box(modifier = Modifier.fillMaxHeight()){
                             Text(
                                 text= formatPhoneNumber(supportPhoneNumber),
                                 fontSize = 24.sp,
-                                modifier = Modifier.align(Alignment.Center)
+                                modifier = Modifier.align(Alignment.Center),
+                                color = MaterialTheme.colorScheme.onSecondary
                             )
                             Text("Kopiuj numer",
-                                color = Color.LightGray,
-                                modifier = Modifier.align(Alignment.BottomCenter))
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer)
                         }
                     }
                 }
@@ -84,7 +91,7 @@ fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
 @Preview(showBackground = true)
 @Composable
 fun PhonePermissionPopupPreview() {
-    AwpfocTheme {
+    AwpfocTheme(dynamicColor = false) {
         val showDialog = remember{ mutableStateOf(true) }
         PhonePermissionPopup(showDialog)
     }

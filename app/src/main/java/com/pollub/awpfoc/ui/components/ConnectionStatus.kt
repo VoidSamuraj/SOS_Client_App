@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,12 +40,13 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
         Column(modifier = Modifier.wrapContentHeight().weight(1f)) {
             Text(
                 text = label,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color =  MaterialTheme.colorScheme.onPrimary
             )
             Text(
                 text = if(isActive) "Aktywny" else "Nie aktywny",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onTertiaryContainer
             )
         }
 
@@ -70,7 +72,7 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
 @Preview(showBackground = true)
 @Composable
 fun ConnectionStatusPreview() {
-    AwpfocTheme {
+    AwpfocTheme(dynamicColor = false) {
         ConnectionStatus("Stan połączenia",true)
     }
 }

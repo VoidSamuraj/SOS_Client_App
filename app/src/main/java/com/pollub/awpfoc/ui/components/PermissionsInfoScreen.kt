@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,7 +35,7 @@ fun PermissionsInfoScreen() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Column(
@@ -46,7 +47,7 @@ fun PermissionsInfoScreen() {
                 text = "Uprawnienia wymagane",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -54,7 +55,7 @@ fun PermissionsInfoScreen() {
             Text(
                 text = "Aby aplikacja mogła działać poprawnie, potrzebne są następujące uprawnienia:",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -77,7 +78,7 @@ fun PermissionsInfoScreen() {
             Text(
                 text = "Prosimy o przyznanie uprawnień, aby aplikacja mogła korzystać z tych funkcji.",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onTertiaryContainer,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
@@ -89,7 +90,7 @@ fun PermissionsInfoScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PermissionsInfoPreview() {
-    AwpfocTheme {
+    AwpfocTheme(dynamicColor = false) {
         PermissionsInfoScreen()
     }
 }

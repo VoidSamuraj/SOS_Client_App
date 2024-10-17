@@ -18,6 +18,7 @@ import com.pollub.awpfoc.MainActivity
 import com.pollub.awpfoc.navigation.NavRoutes
 import com.pollub.awpfoc.supportPhoneNumber
 import com.pollub.awpfoc.ui.components.PhonePermissionPopup
+import com.pollub.awpfoc.ui.components.TopBar
 import com.pollub.awpfoc.ui.login.LoginScreen
 import com.pollub.awpfoc.ui.login.RegistrationScreen
 import com.pollub.awpfoc.ui.theme.AwpfocTheme
@@ -54,18 +55,24 @@ fun AppUI(mainActivity: MainActivity,showDialog:MutableState<Boolean>, requestCa
 
         val navController = rememberNavController()
         AwpfocTheme(dynamicColor = false) {
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                NavHost(navController = navController, startDestination = NavRoutes.LoginScreen.route) {
-                    composable(NavRoutes.MainScreen.route) {
+            NavHost(navController = navController, startDestination = NavRoutes.LoginScreen.route) {
+                composable(NavRoutes.MainScreen.route) {
+                    Scaffold(modifier = Modifier.fillMaxSize(),
+                        topBar = {
+                            TopBar(onLogout = {
+                                navController.navigate(NavRoutes.LoginScreen.route)
+                            })
+                        }
+                    ) { innerPadding ->
                         MainScreen(
                             modifier = Modifier.padding(innerPadding),
                             phoneNumber = supportPhoneNumber,
                             requestCallPermissionLauncher = requestCallPermissionLauncher,
-                            onLogout = {
-                                navController.navigate(NavRoutes.LoginScreen.route)
-                            })
+                        )
                     }
-                    composable(NavRoutes.LoginScreen.route) {
+                }
+                composable(NavRoutes.LoginScreen.route) {
+                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         LoginScreen(
                             modifier = Modifier.padding(innerPadding),
                             onLoginPress = {
@@ -79,7 +86,9 @@ fun AppUI(mainActivity: MainActivity,showDialog:MutableState<Boolean>, requestCa
                             }
                         )
                     }
-                    composable(NavRoutes.RegisterScreen.route) {
+                }
+                composable(NavRoutes.RegisterScreen.route) {
+                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         RegistrationScreen(
                             modifier = Modifier.padding(innerPadding),
                             navToLogin = {
@@ -91,8 +100,8 @@ fun AppUI(mainActivity: MainActivity,showDialog:MutableState<Boolean>, requestCa
                         )
                     }
                 }
-                PhonePermissionPopup(showDialog)
             }
+            PhonePermissionPopup(showDialog)
         }
     }
 }

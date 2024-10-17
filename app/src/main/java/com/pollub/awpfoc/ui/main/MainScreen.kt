@@ -16,23 +16,21 @@ import androidx.compose.ui.unit.dp
 import com.pollub.awpfoc.ui.components.CallMenu
 import com.pollub.awpfoc.ui.components.ConnectionStatus
 import com.pollub.awpfoc.ui.components.SOSButton
-import com.pollub.awpfoc.ui.components.TopBar
+import com.pollub.awpfoc.ui.theme.AwpfocTheme
 
 /**
  * Composable function for the main screen of the application. This screen displays the connection statuses,
- * an SOS button, and a call menu for handling phone calls. It includes a top bar for logout functionality.
+ * an SOS button, and a call menu for handling phone calls.
  *
  * @param modifier Optional [Modifier] to be applied to the root element.
  * @param phoneNumber Optional phone number to be displayed in the call menu.
  * @param requestCallPermissionLauncher Optional launcher for requesting call permissions.
- * @param onLogout Lambda function to be executed when the logout action is triggered.
  */
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     phoneNumber: String?=null,
-    requestCallPermissionLauncher: ActivityResultLauncher<String>?=null,
-    onLogout:()->Unit={}
+    requestCallPermissionLauncher: ActivityResultLauncher<String>?=null
 ) {
 
     val isSystemConnected = remember{ mutableStateOf(false)}
@@ -44,7 +42,6 @@ fun MainScreen(
             .fillMaxSize()
             .background(Color(0xFFEFEFF4))
     ) {
-        TopBar(onLogout = onLogout)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -78,5 +75,7 @@ fun MainScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewClientAppUI() {
-    MainScreen()
+    AwpfocTheme(dynamicColor = false) {
+        MainScreen()
+    }
 }

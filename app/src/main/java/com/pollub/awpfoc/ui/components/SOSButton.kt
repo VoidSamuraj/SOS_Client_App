@@ -79,7 +79,7 @@ fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: ()->Unit) {
 @Preview(showBackground = true)
 @Composable
 fun SOSButtonPreview() {
-    AwpfocTheme {
+    AwpfocTheme(dynamicColor = false) {
         val isSosActive = remember{ mutableStateOf(true) }
         SOSButton(isSosActive,{})
     }

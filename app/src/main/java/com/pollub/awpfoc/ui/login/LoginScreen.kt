@@ -18,11 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.pollub.awpfoc.ui.theme.AwpfocTheme
 
 
 /**
@@ -50,7 +50,7 @@ fun LoginScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFEFEFF4))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -58,14 +58,16 @@ fun LoginScreen(
         Text(
             text = "Zaloguj",
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         Text(
             text = "Aby się zalogować wprowadź swój adres e-mail i hasło",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         OutlinedTextField(
@@ -88,9 +90,9 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text(text = "Zaloguj", color = Color.White)
+            Text(text = "Zaloguj", color = MaterialTheme.colorScheme.onSecondary)
         }
 
         Button(
@@ -98,9 +100,9 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text(text = "Zapomniałem hasła", color = Color.White)
+            Text(text = "Zapomniałem hasła", color = MaterialTheme.colorScheme.onSecondary)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -108,15 +110,16 @@ fun LoginScreen(
             text = "Jeżeli nie posiadasz konta zarejestruj się",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
+            color = MaterialTheme.colorScheme.onPrimary
         )
 
         Button(
             onClick = navToRegister,
             modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061))
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
-            Text(text = "Załóż nowe konto", color = Color.White)
+            Text(text = "Załóż nowe konto", color = MaterialTheme.colorScheme.onSecondary)
         }
     }
 }
@@ -124,5 +127,7 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    LoginScreen()
+    AwpfocTheme(dynamicColor = false) {
+        LoginScreen()
+    }
 }

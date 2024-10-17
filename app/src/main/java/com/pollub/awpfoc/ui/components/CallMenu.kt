@@ -14,12 +14,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -48,12 +48,12 @@ fun CallMenu(isCancelButtonVisible: Boolean, onCancelClick: () -> Unit, phoneNum
         if(isCancelButtonVisible)
             Button(
                 onClick = onCancelClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4A5061)),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
                     .height(80.dp)
             ) {
-                Text(text = "ANULUJ SOS", color = Color.White, fontSize = 18.sp, textAlign = TextAlign.Center)
+                Text(text = "ANULUJ SOS", color = MaterialTheme.colorScheme.onSecondary, fontSize = 18.sp, textAlign = TextAlign.Center)
             }
         else
             Spacer(modifier = Modifier.weight(1f))
@@ -76,7 +76,7 @@ fun CallButton(phoneNumber: String?=null, requestPermissionLauncher: ActivityRes
             if(requestPermissionLauncher!=null && phoneNumber!=null)
                 makePhoneCall(context, requestPermissionLauncher, phoneNumber)
         },
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8C8C95)),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
         modifier = Modifier
             .size(80.dp)
             .clip(CircleShape)
@@ -92,7 +92,7 @@ fun CallButton(phoneNumber: String?=null, requestPermissionLauncher: ActivityRes
 @Preview(showBackground = true)
 @Composable
 fun CallPreview() {
-    AwpfocTheme {
+    AwpfocTheme(dynamicColor = false) {
         CallMenu(true,{},"2137")
     }
 }
