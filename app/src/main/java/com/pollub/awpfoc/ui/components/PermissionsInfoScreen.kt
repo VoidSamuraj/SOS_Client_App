@@ -71,6 +71,7 @@ fun PermissionsInfoScreen() {
                 Text(text = "- Internet", color = Color.Black)
                 Text(text = "- Lokalizacja przybliżona", color = Color.Black)
                 Text(text = "- Lokalizacja precyzyjna", color = Color.Black)
+                Text(text = "- Używanie serwisów w tle", color = Color.Black)
             }
 
             Spacer(modifier = Modifier.height(24.dp))

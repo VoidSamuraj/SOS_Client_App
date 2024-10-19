@@ -25,12 +25,16 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
  * @param modifier Optional [Modifier] to be applied to the root element.
  * @param phoneNumber Optional phone number to be displayed in the call menu.
  * @param requestCallPermissionLauncher Optional launcher for requesting call permissions.
+ * @param onCallSOS Lambda function to be executed when the SOS button is clicked.
+ * @param onCancelSOS Lambda function to be executed when the SOS cancel button is clicked.
  */
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
     phoneNumber: String?=null,
-    requestCallPermissionLauncher: ActivityResultLauncher<String>?=null
+    requestCallPermissionLauncher: ActivityResultLauncher<String>?=null,
+    onCallSOS:()->Unit,
+    onCancelSOS:()->Unit,
 ) {
 
     val isSystemConnected = remember{ mutableStateOf(false)}
@@ -55,6 +59,7 @@ fun MainScreen(
             isSosActive = isSosActive,
             onButtonClick = {
                 isSosActive.value=true
+                onCallSOS()
             })
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -63,6 +68,7 @@ fun MainScreen(
             isCancelButtonVisible = isSosActive.value,
             onCancelClick = {
                 isSosActive.value=false
+                onCancelSOS()
             },
             phoneNumber = phoneNumber,
             requestPermissionLauncher = requestCallPermissionLauncher
@@ -76,6 +82,6 @@ fun MainScreen(
 @Composable
 fun PreviewClientAppUI() {
     AwpfocTheme(dynamicColor = false) {
-        MainScreen()
+        MainScreen(onCallSOS = {}, onCancelSOS = {})
     }
 }

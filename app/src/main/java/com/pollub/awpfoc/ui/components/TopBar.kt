@@ -35,8 +35,6 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(onLogout: () -> Unit) {
-
-
     TopAppBar(
         colors = topAppBarColors(
             containerColor = MaterialTheme.colorScheme.secondary,
