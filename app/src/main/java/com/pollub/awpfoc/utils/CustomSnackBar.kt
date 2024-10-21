@@ -43,7 +43,7 @@ import com.pollub.awpfoc.R
  * @param onDismiss A callback function invoked after the fade-out animation completes.
  */
 @Composable
-fun CustomSnackbar(
+fun CustomSnackBar(
     modifier: Modifier,
     message: String,
     backgroundColor: Color,
@@ -118,7 +118,7 @@ fun CustomSnackbar(
 @Composable
 fun PreviewCustomSnackbar() {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        CustomSnackbar(
+        CustomSnackBar(
             modifier = Modifier.padding(innerPadding),
             message = "To jest przykładowy komunikat!",
             backgroundColor = Color.Red,

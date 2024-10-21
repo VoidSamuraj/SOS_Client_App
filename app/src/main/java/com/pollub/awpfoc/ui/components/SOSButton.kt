@@ -36,7 +36,7 @@ import com.pollub.awpfoc.utils.drawShadow
  * @param onButtonClick Lambda function to be executed when the button is clicked.
  */
 @Composable
-fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: ()->Unit) {
+fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: () -> Unit) {
 
     val infiniteTransition = rememberInfiniteTransition()
 
@@ -59,19 +59,28 @@ fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: ()->Unit) {
 
     Button(
         onClick = onButtonClick,
-        colors = ButtonDefaults.buttonColors(containerColor =  if(isSosActive.value) buttonColor.value else Color(0xFF4A5061)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSosActive.value) buttonColor.value else Color(
+                0xFF4A5061
+            )
+        ),
         shape = RoundedCornerShape(20.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 32.dp)
             .height(200.dp)
             .drawWithContent {
-                if(isSosActive.value)
-                    drawShadow(20.dp,30.dp,shadowColor.value)
+                if (isSosActive.value)
+                    drawShadow(20.dp, 30.dp, shadowColor.value)
                 drawContent()
             }
     ) {
-        Text(text = if(isSosActive.value) "SOS AKTYWNY" else "SOS", color = Color.White , fontSize = 36.sp, textAlign = TextAlign.Center)
+        Text(
+            text = if (isSosActive.value) "SOS AKTYWNY" else "SOS",
+            color = Color.White,
+            fontSize = 36.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -80,7 +89,7 @@ fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: ()->Unit) {
 @Composable
 fun SOSButtonPreview() {
     AwpfocTheme(dynamicColor = false) {
-        val isSosActive = remember{ mutableStateOf(true) }
-        SOSButton(isSosActive,{})
+        val isSosActive = remember { mutableStateOf(true) }
+        SOSButton(isSosActive, {})
     }
 }

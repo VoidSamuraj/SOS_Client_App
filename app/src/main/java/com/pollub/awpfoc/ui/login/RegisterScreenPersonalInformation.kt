@@ -26,8 +26,12 @@ import com.pollub.awpfoc.utils.isPhoneValid
 import com.pollub.awpfoc.utils.isUsernameValid
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pollub.awpfoc.data.models.CustomerInfo
 import com.pollub.awpfoc.utils.isEmailValid
+import com.pollub.awpfoc.viewmodel.RegisterScreenViewModel
 
 /**
  * Personal information registration screen that collects user details for account creation.
@@ -39,30 +43,23 @@ import com.pollub.awpfoc.utils.isEmailValid
 @Composable
 fun RegistrationScreenPersonalInformation(
     modifier: Modifier = Modifier,
+    registerScreenViewModel: RegisterScreenViewModel,
     navBack: () -> Unit = {},
-    onSignUp: (login:String, password:String, name:String, surname:String, email:String, phone:String, pesel:String) -> Unit = { _, _, _, _, _, _, _ -> }
+    onSignUp: (customer: CustomerInfo) -> Unit = { _ -> }
 ) {
 
-    var loginState by remember { mutableStateOf("") }
-    var passwordState by remember { mutableStateOf("") }
 
-    var nameState by remember { mutableStateOf("") }
-    var surnameState by remember { mutableStateOf("") }
-    var emailState by remember { mutableStateOf("") }
-    var phoneState by remember { mutableStateOf("") }
-    var peselState by remember { mutableStateOf("") }
+    var nameState by remember { mutableStateOf(registerScreenViewModel.name) }
+    var surnameState by remember { mutableStateOf(registerScreenViewModel.surname) }
+    var emailState by remember { mutableStateOf(registerScreenViewModel.surname) }
+    var phoneState by remember { mutableStateOf(registerScreenViewModel.phone) }
+    var peselState by remember { mutableStateOf(registerScreenViewModel.pesel) }
 
     var isNameValid by remember { mutableStateOf(true) }
     var isSurnameValid by remember { mutableStateOf(true) }
     var isEmailValid by remember { mutableStateOf(true) }
     var isPhoneValid by remember { mutableStateOf(true) }
     var isPeselValid by remember { mutableStateOf(true) }
-
-    var nameError by remember { mutableStateOf("") }
-    var surnameError by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var phoneError by remember { mutableStateOf("") }
-    var peselError by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -75,18 +72,25 @@ fun RegistrationScreenPersonalInformation(
         OutlinedTextField(
             value = nameState,
             onValueChange = {
-                nameState = it
-                isNameValid = isUsernameValid(it)
-                nameError = if(isNameValid) "" else "Imie powinno zawierać od 3 do 40 znaków."
+                if (it.length <= 40) {
+                    nameState = it
+                    isNameValid = isUsernameValid(it)
+                }
             },
             label = { Text("Imię*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isNameValid) 16.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-            isError = !isNameValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isNameValid) 16.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            isError = !isNameValid,
+            maxLines = 1
         )
         if (!isNameValid) {
             Text(
-                text = nameError,
+                text = "Imie powinno zawierać od 3 do 40 znaków.",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -96,18 +100,25 @@ fun RegistrationScreenPersonalInformation(
         OutlinedTextField(
             value = surnameState,
             onValueChange = {
-                surnameState = it
-                isSurnameValid = isUsernameValid(it)
-                surnameError = if(isSurnameValid) "" else "Nazwisko powinno zawierać od 3 do 40 znaków."
+                if (it.length <= 40) {
+                    surnameState = it
+                    isSurnameValid = isUsernameValid(it)
+                }
             },
             label = { Text("Nazwisko*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isSurnameValid) 16.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-            isError = !isSurnameValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isSurnameValid) 16.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            isError = !isSurnameValid,
+            maxLines = 1
         )
         if (!isSurnameValid) {
             Text(
-                text = surnameError,
+                text = "Nazwisko powinno zawierać od 3 do 40 znaków.",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -119,16 +130,21 @@ fun RegistrationScreenPersonalInformation(
             onValueChange = {
                 emailState = it
                 isEmailValid = isEmailValid(it)
-                emailError = if(isEmailValid) "" else "Proszę podać poprawny email"
             },
             label = { Text("Email*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isEmailValid) 16.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
-            isError = !isEmailValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isEmailValid) 16.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            isError = !isEmailValid,
+            maxLines = 1
         )
         if (!isEmailValid) {
             Text(
-                text = emailError,
+                text = "Proszę podać poprawny email",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -138,18 +154,25 @@ fun RegistrationScreenPersonalInformation(
         OutlinedTextField(
             value = phoneState,
             onValueChange = {
-                phoneState = it
-                isPhoneValid = isPhoneValid(it)
-                phoneError = if(isPhoneValid) "" else "Telefon powinien zawierać od 10 do 13 cyfr z opcjonalnym znakiem +"
+                if (it.length <= 13) {
+                    phoneState = it
+                    isPhoneValid = isPhoneValid(it)
+                }
             },
             label = { Text("Nr telefonu*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isPhoneValid) 16.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
-            isError = !isPhoneValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isPhoneValid) 16.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Next
+            ),
+            isError = !isPhoneValid,
+            maxLines = 1
         )
         if (!isPhoneValid) {
             Text(
-                text = phoneError,
+                text = "Telefon powinien zawierać od 10 do 13 cyfr z opcjonalnym znakiem +",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -159,18 +182,25 @@ fun RegistrationScreenPersonalInformation(
         OutlinedTextField(
             value = peselState,
             onValueChange = {
-                peselState = it
-                isPeselValid = isPeselValid(it)
-                peselError = if(isPeselValid) "" else "Proszę podać poprawny pesel"
+                if (it.length <= 11) {
+                    peselState = it
+                    isPeselValid = isPeselValid(it)
+                }
             },
             label = { Text("Nr PESEL*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isPeselValid) 32.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            isError = !isPeselValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isPeselValid) 32.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            isError = !isPeselValid,
+            maxLines = 1
         )
         if (!isPeselValid) {
             Text(
-                text = peselError,
+                text = "Proszę podać poprawny pesel",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -178,7 +208,6 @@ fun RegistrationScreenPersonalInformation(
         }
         Button(
             onClick = {
-                var proceed = true
 
                 isNameValid = isUsernameValid(nameState)
                 isSurnameValid = isUsernameValid(surnameState)
@@ -186,37 +215,19 @@ fun RegistrationScreenPersonalInformation(
                 isPhoneValid = isPhoneValid(phoneState)
                 isPeselValid = isPeselValid(peselState)
 
-                if(!isNameValid){
-                    proceed = false
-                    nameError = "Imie powinno zawierać od 3 do 40 znaków."
-                }
-                if(!isSurnameValid){
-                    proceed = false
-                    surnameError = "Nazwisko powinno zawierać od 3 do 40 znaków."
-                }
-                if(!isEmailValid){
-                    proceed = false
-                    emailError = "Proszę podać poprawny email"
-                }
-                if(!isPhoneValid){
-                    proceed = false
-                    phoneError = "Telefon powinien zawierać od 10 do 13 cyfr z opcjonalnym znakiem +"
-                }
-                if(!isPeselValid){
-                    proceed = false
-                    peselError = "Proszę podać poprawny pesel"
-                }
-
-                if(proceed)
+                if (isNameValid && isSurnameValid && isEmailValid && isPhoneValid && isPeselValid) {
                     onSignUp(
-                        loginState,
-                        passwordState,
-                        nameState,
-                        surnameState,
-                        emailState,
-                        phoneState,
-                        peselState
+                        CustomerInfo(
+                            id = -1,
+                            name = nameState,
+                            surname = surnameState,
+                            email = emailState,
+                            phone = phoneState,
+                            pesel = peselState,
+                            account_deleted = false,
+                        )
                     )
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
@@ -226,6 +237,11 @@ fun RegistrationScreenPersonalInformation(
 
         TextButton(
             onClick = {
+                registerScreenViewModel.name = nameState
+                registerScreenViewModel.surname = surnameState
+                registerScreenViewModel.email = emailState
+                registerScreenViewModel.phone = phoneState
+                registerScreenViewModel.pesel = peselState
                 navBack()
             },
             modifier = Modifier.padding(top = 16.dp)
@@ -239,6 +255,6 @@ fun RegistrationScreenPersonalInformation(
 @Composable
 fun PreviewRegistrationScreenPersonalInformation() {
     AwpfocTheme(dynamicColor = false) {
-        RegistrationScreenPersonalInformation()
+        RegistrationScreenPersonalInformation(registerScreenViewModel = viewModel())
     }
 }

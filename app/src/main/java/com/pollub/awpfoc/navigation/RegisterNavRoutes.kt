@@ -1,5 +1,12 @@
 package com.pollub.awpfoc.navigation
 
+/**
+ * Enum representing the different register screens in the application.
+ */
+enum class RegisterScreen {
+    REGISTER_SCREEN1,
+    REGISTER_SCREEN2
+}
 
 /**
  * Sealed class representing the navigation routes in the Register Screen.
@@ -7,11 +14,6 @@ package com.pollub.awpfoc.navigation
  * @param route The string route associated with the navigation destination.
  */
 sealed class RegisterNavRoutes(val route: String) {
-    object RegisterScreen1 : RegisterNavRoutes("register_screen1")
-    object RegisterScreen2 : RegisterNavRoutes("register_screen2/{login}/{password}")
-    companion object {
-        fun getRegisterScreen2Route(login: String, password: String): String {
-            return "register_screen2/$login/$password"
-        }
-    }
+    object RegisterScreen1 : RegisterNavRoutes(RegisterScreen.REGISTER_SCREEN1.name)
+    object RegisterScreen2 : RegisterNavRoutes(RegisterScreen.REGISTER_SCREEN2.name)
 }

@@ -31,15 +31,15 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    phoneNumber: String?=null,
-    requestCallPermissionLauncher: ActivityResultLauncher<String>?=null,
-    onCallSOS:()->Unit,
-    onCancelSOS:()->Unit,
+    phoneNumber: String? = null,
+    requestCallPermissionLauncher: ActivityResultLauncher<String>? = null,
+    onCallSOS: () -> Unit,
+    onCancelSOS: () -> Unit,
 ) {
 
-    val isSystemConnected = remember{ mutableStateOf(false)}
-    val isSmartWatchConnected = remember{ mutableStateOf(false)}
-    val isSosActive = remember{ mutableStateOf(false)}
+    val isSystemConnected = remember { mutableStateOf(false) }
+    val isSmartWatchConnected = remember { mutableStateOf(false) }
+    val isSosActive = remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -58,7 +58,7 @@ fun MainScreen(
         SOSButton(
             isSosActive = isSosActive,
             onButtonClick = {
-                isSosActive.value=true
+                isSosActive.value = true
                 onCallSOS()
             })
 
@@ -67,7 +67,7 @@ fun MainScreen(
         CallMenu(
             isCancelButtonVisible = isSosActive.value,
             onCancelClick = {
-                isSosActive.value=false
+                isSosActive.value = false
                 onCancelSOS()
             },
             phoneNumber = phoneNumber,

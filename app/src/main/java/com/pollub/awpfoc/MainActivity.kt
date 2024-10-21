@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModelProvider
-import com.pollub.awpfoc.data.SessionManager
+import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.ui.components.PermissionsInfoScreen
 import com.pollub.awpfoc.ui.components.PhonePermissionPopup
 import com.pollub.awpfoc.ui.main.AppUI
@@ -19,12 +19,12 @@ import com.pollub.awpfoc.utils.EnableEdgeToEdgeAndSetBarTheme
 import com.pollub.awpfoc.utils.makePhoneCall
 import com.pollub.awpfoc.viewmodel.AppViewModel
 
-val supportPhoneNumber="+48123456789"
+val supportPhoneNumber = "+48123456789"
 
 class MainActivity : ComponentActivity() {
 
     var showDialog = mutableStateOf(false)
-    var isDarkMode =true
+    var isDarkMode = true
     private lateinit var requestPermissionsLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var requestCallPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var viewModel: AppViewModel
@@ -33,13 +33,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        SessionManager.init(this)
+        SharedPreferencesManager.init(this)
         viewModel = ViewModelProvider(this).get(AppViewModel::class.java)
         requestCallPermissionLauncher = registerForActivityResult(
-            ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
             if (!isGranted) {
                 showDialog.value = true
-            }else{
+            } else {
                 makePhoneCall(this, requestCallPermissionLauncher, supportPhoneNumber)
             }
         }
@@ -50,10 +51,10 @@ class MainActivity : ComponentActivity() {
             val allGranted = permissions.all { it.value }
             setContent {
                 AwpfocTheme(dynamicColor = false) {
-                    CheckPermissions(this,requestPermissionsLauncher) {
+                    CheckPermissions(this, requestPermissionsLauncher) {
                         val lighterColor = MaterialTheme.colorScheme.secondary.toArgb()
                         val darkerColor = MaterialTheme.colorScheme.primary.toArgb()
-                        EnableEdgeToEdgeAndSetBarTheme(lighterColor,darkerColor)
+                        EnableEdgeToEdgeAndSetBarTheme(lighterColor, darkerColor)
                         if (allGranted) {
                             AppUI(
                                 this,
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             AwpfocTheme(dynamicColor = false) {
-                CheckPermissions(this,requestPermissionsLauncher) {
+                CheckPermissions(this, requestPermissionsLauncher) {
                     val lighterColor = MaterialTheme.colorScheme.secondary.toArgb()
                     val darkerColor = MaterialTheme.colorScheme.primary.toArgb()
                     EnableEdgeToEdgeAndSetBarTheme(lighterColor, darkerColor)

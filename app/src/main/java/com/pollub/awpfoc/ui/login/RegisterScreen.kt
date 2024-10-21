@@ -30,9 +30,12 @@ import com.pollub.awpfoc.utils.isPasswordValid
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pollub.awpfoc.R
+import com.pollub.awpfoc.viewmodel.RegisterScreenViewModel
 
 /**
  * Registration screen that allows the user to enter their username and password.
@@ -45,24 +48,20 @@ import com.pollub.awpfoc.R
 @Composable
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
+    registerScreenViewModel: RegisterScreenViewModel,
     navToLogin: () -> Unit = {},
-    navToNextScreen: (login: String, password: String) -> Unit = {_,_->},
+    navToNextScreen: () -> Unit = {},
 ) {
-    var loginState by remember { mutableStateOf("") }
-    var passwordState by remember { mutableStateOf("") }
-    var confirmPasswordState by remember { mutableStateOf("") }
+    var loginState by remember { mutableStateOf(registerScreenViewModel.login) }
+    var passwordState by remember { mutableStateOf(registerScreenViewModel.password) }
+    var confirmPasswordState by remember { mutableStateOf(registerScreenViewModel.password) }
 
     var isLoginValid by remember { mutableStateOf(true) }
     var isPasswordValid by remember { mutableStateOf(true) }
     var arePasswordsSame by remember { mutableStateOf(true) }
 
-    var loginError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var passwordConfirmError by remember { mutableStateOf("") }
-
     val passwordVisible = remember { mutableStateOf(false) }
     val repeatPasswordVisible = remember { mutableStateOf(false) }
-
 
     Column(
         modifier = modifier
@@ -90,17 +89,25 @@ fun RegistrationScreen(
         OutlinedTextField(
             value = loginState,
             onValueChange = {
-                loginState = it
-                isLoginValid = isLoginValid(it)
-                loginError = if (isLoginValid) "" else "Login jest wymagany i powinien zawierać od 3 do 20 znaków"
+                if (it.length <= 20) {
+                    loginState = it
+                    isLoginValid = isLoginValid(it)
+                }
             },
             label = { Text("Login*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isLoginValid) 16.dp else 4.dp),
-            isError = !isLoginValid
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isLoginValid) 16.dp else 4.dp),
+            isError = !isLoginValid,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            maxLines = 1
         )
         if (!isLoginValid) {
             Text(
-                text = loginError,
+                text = "Login jest wymagany i powinien zawierać od 3 do 20 znaków",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -112,29 +119,34 @@ fun RegistrationScreen(
                 passwordState = it
                 isPasswordValid = isPasswordValid(it)
                 arePasswordsSame = it == confirmPasswordState
-                passwordConfirmError =  if (arePasswordsSame) "" else "Hasła powinny być takie same."
-                passwordError = if (isPasswordValid) "" else "Hasło powinno mieć minimum 8 znaków, zawierać małą i dużą literę, cyfrę i znak specjalny."
             },
             label = { Text("Wprowadź hasło*") },
             visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(isPasswordValid) 16.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isPasswordValid) 16.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next
+            ),
             isError = !isPasswordValid,
             trailingIcon = {
-                val image = if (passwordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
+                val image =
+                    if (passwordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
                 Icon(
                     painter = painterResource(image),
                     contentDescription = if (passwordVisible.value) "Ukryj hasło" else "Pokaż hasło",
-                    modifier = Modifier.clickable{ passwordVisible.value = !passwordVisible.value }
+                    modifier = Modifier.clickable { passwordVisible.value = !passwordVisible.value }
                 )
-            }
+            },
+            maxLines = 1
         )
         if (!isPasswordValid) {
             Text(
-                text = passwordError,
+                text = "Hasło powinno mieć minimum 8 znaków, zawierać małą i dużą literę, cyfrę i znak specjalny.",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom=8.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             )
         }
         OutlinedTextField(
@@ -142,25 +154,33 @@ fun RegistrationScreen(
             onValueChange = {
                 confirmPasswordState = it
                 arePasswordsSame = it == passwordState
-                passwordConfirmError =  if (arePasswordsSame) "" else "Hasła powinny być takie same."
             },
             label = { Text("Powtórz hasło*") },
             visualTransformation = if (repeatPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = if(arePasswordsSame) 32.dp else 4.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (arePasswordsSame) 32.dp else 4.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
             isError = !arePasswordsSame,
             trailingIcon = {
-                val image = if (repeatPasswordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
+                val image =
+                    if (repeatPasswordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
                 Icon(
                     painter = painterResource(image),
                     contentDescription = if (repeatPasswordVisible.value) "Ukryj hasło" else "Pokaż hasło",
-                    modifier = Modifier.clickable{ repeatPasswordVisible.value = !repeatPasswordVisible.value }
+                    modifier = Modifier.clickable {
+                        repeatPasswordVisible.value = !repeatPasswordVisible.value
+                    }
                 )
-            }
+            },
+            maxLines = 1
         )
         if (!arePasswordsSame) {
             Text(
-                text = passwordConfirmError,
+                text = "Hasła powinny być takie same.",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -168,26 +188,16 @@ fun RegistrationScreen(
         }
         Button(
             onClick = {
-                var proceed = true
 
                 isLoginValid = isLoginValid(loginState)
                 isPasswordValid = isPasswordValid(passwordState)
                 arePasswordsSame = passwordState == confirmPasswordState
-                if(!isLoginValid){
-                    proceed = false
-                    loginError = "Login jest wymagany i powinien zawierać od 3 do 20 znaków"
-                }
-                if(!isPasswordValid){
-                    proceed = false
-                    passwordError = "Hasło powinno mieć minimum 8 znaków, zawierać małą i dużą literę, cyfrę i znak specjalny."
-                }
-                if(!arePasswordsSame){
-                    proceed = false
-                    passwordConfirmError = "Hasła powinny być takie same."
-                }
 
-                if(proceed)
-                    navToNextScreen(loginState, passwordState)
+                if (isLoginValid && isPasswordValid && arePasswordsSame) {
+                    registerScreenViewModel.login = loginState
+                    registerScreenViewModel.password = passwordState
+                    navToNextScreen()
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -206,6 +216,7 @@ fun RegistrationScreen(
 
         OutlinedButton(
             onClick = {
+                registerScreenViewModel.clearAllFields()
                 navToLogin()
             },
             modifier = Modifier.padding(bottom = 100.dp)
@@ -219,6 +230,6 @@ fun RegistrationScreen(
 @Composable
 fun PreviewRegistrationScreen() {
     AwpfocTheme(dynamicColor = false) {
-        RegistrationScreen()
+        RegistrationScreen(registerScreenViewModel = viewModel())
     }
 }

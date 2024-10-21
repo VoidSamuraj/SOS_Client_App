@@ -1,7 +1,7 @@
 package com.pollub.awpfoc.network
 
 import com.pollub.awpfoc.data.ApiService
-import com.pollub.awpfoc.data.SessionManager
+import com.pollub.awpfoc.data.SharedPreferencesManager
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -13,9 +13,13 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
+/**
+ * Singleton object to manage the Retrofit client configuration.
+ */
 object RetrofitClient {
     private const val BASE_URL = "https://10.0.2.2:8443/"
 
+    // OkHttpClient instance configured with SSL settings and request interceptors.
     private val client = OkHttpClient.Builder()
         //TODO REMOVE THIS After Usage of trusted ssl keys
         //TEMPORARY ALLOW ALL CERTS START
@@ -27,8 +31,9 @@ object RetrofitClient {
         .hostnameVerifier { hostname, session -> true }
         // END
         .addInterceptor { chain ->
+            // Retrieve the original request, token and provide token within header
             val originalRequest = chain.request()
-            val token = SessionManager.getToken()
+            val token = SharedPreferencesManager.getToken()
 
             val requestBuilder = originalRequest.newBuilder()
                 .apply {
@@ -42,6 +47,9 @@ object RetrofitClient {
         }
         .build()
 
+    /**
+     * Lazily initializes the Retrofit instance with the configured OkHttpClient and converters.
+     */
     val instance: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

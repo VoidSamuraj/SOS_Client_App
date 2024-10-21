@@ -40,12 +40,19 @@ import com.pollub.awpfoc.utils.makePhoneCall
  * @param requestPermissionLauncher Optional launcher for requesting permissions needed for calling.
  */
 @Composable
-fun CallMenu(isCancelButtonVisible: Boolean, onCancelClick: () -> Unit, phoneNumber: String?=null, requestPermissionLauncher: ActivityResultLauncher<String>?=null) {
+fun CallMenu(
+    isCancelButtonVisible: Boolean,
+    onCancelClick: () -> Unit,
+    phoneNumber: String? = null,
+    requestPermissionLauncher: ActivityResultLauncher<String>? = null
+) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        if(isCancelButtonVisible)
+        if (isCancelButtonVisible)
             Button(
                 onClick = onCancelClick,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
@@ -53,7 +60,12 @@ fun CallMenu(isCancelButtonVisible: Boolean, onCancelClick: () -> Unit, phoneNum
                 modifier = Modifier
                     .height(80.dp)
             ) {
-                Text(text = "ANULUJ SOS", color = MaterialTheme.colorScheme.onSecondary, fontSize = 18.sp, textAlign = TextAlign.Center)
+                Text(
+                    text = "ANULUJ SOS",
+                    color = MaterialTheme.colorScheme.onSecondary,
+                    fontSize = 18.sp,
+                    textAlign = TextAlign.Center
+                )
             }
         else
             Spacer(modifier = Modifier.weight(1f))
@@ -69,11 +81,14 @@ fun CallMenu(isCancelButtonVisible: Boolean, onCancelClick: () -> Unit, phoneNum
  * @param requestPermissionLauncher Optional launcher for requesting permissions needed for calling.
  */
 @Composable
-fun CallButton(phoneNumber: String?=null, requestPermissionLauncher: ActivityResultLauncher<String>?=null) {
+fun CallButton(
+    phoneNumber: String? = null,
+    requestPermissionLauncher: ActivityResultLauncher<String>? = null
+) {
     val context = LocalContext.current
     Button(
         onClick = {
-            if(requestPermissionLauncher!=null && phoneNumber!=null)
+            if (requestPermissionLauncher != null && phoneNumber != null)
                 makePhoneCall(context, requestPermissionLauncher, phoneNumber)
         },
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
@@ -84,7 +99,9 @@ fun CallButton(phoneNumber: String?=null, requestPermissionLauncher: ActivityRes
         Image(
             painter = painterResource(id = R.drawable.baseline_phone_24),
             contentDescription = "Call",
-            modifier = Modifier.rotate(225f).fillMaxSize(),
+            modifier = Modifier
+                .rotate(225f)
+                .fillMaxSize(),
         )
     }
 }
@@ -93,6 +110,6 @@ fun CallButton(phoneNumber: String?=null, requestPermissionLauncher: ActivityRes
 @Composable
 fun CallPreview() {
     AwpfocTheme(dynamicColor = false) {
-        CallMenu(true,{},"2137")
+        CallMenu(true, {}, "2137")
     }
 }

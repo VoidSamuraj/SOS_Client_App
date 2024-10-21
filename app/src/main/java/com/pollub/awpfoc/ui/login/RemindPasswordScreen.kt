@@ -14,8 +14,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pollub.awpfoc.ui.theme.AwpfocTheme
+import com.pollub.awpfoc.utils.isEmailValid
 
 /**
  * Composable function for the password reminder screen where users can enter their email to reset their password.
@@ -36,10 +39,11 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
 @Composable
 fun RemindPasswordScreen(
     modifier: Modifier = Modifier,
-    navBack:()->Unit={},
+    navBack: () -> Unit = {},
     onSendPress: (email: String) -> Unit = {}
 ) {
-    val emailState = remember { mutableStateOf("") }
+    var emailState by remember { mutableStateOf("") }
+    var isEmailValid by remember { mutableStateOf(true) }
 
     Column(
         modifier = modifier
@@ -65,15 +69,33 @@ fun RemindPasswordScreen(
         )
 
         OutlinedTextField(
-            value = emailState.value,
-            onValueChange = { emailState.value = it },
+            value = emailState,
+            onValueChange = {
+                emailState = it
+                isEmailValid = isEmailValid(it)
+            },
             label = { Text("Email*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = if (isEmailValid) 32.dp else 4.dp),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email)
         )
+        if (!isEmailValid) {
+            Text(
+                text = "Proszę podać poprawny email",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
 
         Button(
-            onClick = { onSendPress(emailState.value) },
+            onClick = {
+                isEmailValid = isEmailValid(emailState)
+                if (isEmailValid)
+                    onSendPress(emailState)
+
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),

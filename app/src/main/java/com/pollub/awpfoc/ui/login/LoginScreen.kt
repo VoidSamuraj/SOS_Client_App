@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -46,9 +47,9 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginPress: (login: String, password: String)->Unit= { _, _ -> },
-    navToRegister: ()->Unit={},
-    onRemindPasswordPress: ()->Unit={}
+    onLoginPress: (login: String, password: String) -> Unit = { _, _ -> },
+    navToRegister: () -> Unit = {},
+    onRemindPasswordPress: () -> Unit = {}
 ) {
 
     val loginState = remember { mutableStateOf("") }
@@ -80,10 +81,20 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = loginState.value,
-            onValueChange = { loginState.value = it },
+            onValueChange = {
+                if (it.length <= 20) {
+                    loginState.value = it
+                }
+            },
             label = { Text("Login*") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next
+            ),
+            maxLines = 1
         )
 
         OutlinedTextField(
@@ -91,20 +102,27 @@ fun LoginScreen(
             onValueChange = { passwordState.value = it },
             label = { Text("Hasło*") },
             visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Done
+            ),
             trailingIcon = {
-                val image = if (passwordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
+                val image =
+                    if (passwordVisible.value) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
                 Icon(
                     painter = painterResource(image),
                     contentDescription = if (passwordVisible.value) "Ukryj hasło" else "Pokaż hasło",
-                    modifier = Modifier.clickable{ passwordVisible.value = !passwordVisible.value }
+                    modifier = Modifier.clickable { passwordVisible.value = !passwordVisible.value }
                 )
-            }
+            },
+            maxLines = 1
         )
 
         Button(
-            onClick = {onLoginPress(loginState.value, passwordState.value) } ,
+            onClick = { onLoginPress(loginState.value, passwordState.value) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
@@ -134,7 +152,9 @@ fun LoginScreen(
 
         Button(
             onClick = navToRegister,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 100.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 100.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
             Text(text = "Załóż nowe konto", color = MaterialTheme.colorScheme.onSecondary)

@@ -80,9 +80,9 @@ fun isPeselValid(pesel: String): Boolean {
 
     val weights = intArrayOf(1, 3, 7, 9, 1, 3, 7, 9, 1, 3)
 
-    // control sum
-    val sum = digits.zip(weights.asIterable()).sumOf { (digit, weight) -> digit * weight }
+    val sum = digits.take(10).zip(weights.asIterable()).sumOf { (digit, weight) -> digit * weight }
 
-    // compare control sum with last number
-    return sum % 10 == 0
+    val controlDigit = (10 - sum % 10) % 10
+
+    return controlDigit == digits[10]
 }

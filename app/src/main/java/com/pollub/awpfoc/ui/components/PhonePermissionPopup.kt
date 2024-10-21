@@ -39,28 +39,35 @@ import com.pollub.awpfoc.utils.formatPhoneNumber
  */
 @Composable
 fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
-    val clipboardManager =  LocalClipboardManager.current
+    val clipboardManager = LocalClipboardManager.current
     if (showDialog.value) {
 
         Dialog(onDismissRequest = { showDialog.value = false }) {
             Box(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.background, shape = RoundedCornerShape(12.dp))
+                    .background(
+                        MaterialTheme.colorScheme.background,
+                        shape = RoundedCornerShape(12.dp)
+                    )
                     .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Aby zadzwonić, musisz udzielić aplikacji zezwolenia na wykonywanie połączeń.",
+                    Text(
+                        text = "Aby zadzwonić, musisz udzielić aplikacji zezwolenia na wykonywanie połączeń.",
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimary)
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = "Lub zadzwonić pod poniższy numer.",
+                    Text(
+                        text = "Lub zadzwonić pod poniższy numer.",
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onPrimary)
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -69,17 +76,19 @@ fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
                         onClick = {
                             clipboardManager.setText(AnnotatedString(supportPhoneNumber))
                         }) {
-                        Box(modifier = Modifier.fillMaxHeight()){
+                        Box(modifier = Modifier.fillMaxHeight()) {
                             Text(
-                                text= formatPhoneNumber(supportPhoneNumber),
+                                text = formatPhoneNumber(supportPhoneNumber),
                                 fontSize = 24.sp,
                                 modifier = Modifier.align(Alignment.Center),
                                 color = MaterialTheme.colorScheme.onSecondary
                             )
-                            Text("Kopiuj numer",
+                            Text(
+                                "Kopiuj numer",
                                 modifier = Modifier.align(Alignment.BottomCenter),
                                 fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onTertiaryContainer)
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
                         }
                     }
                 }
@@ -92,7 +101,7 @@ fun PhonePermissionPopup(showDialog: MutableState<Boolean>) {
 @Composable
 fun PhonePermissionPopupPreview() {
     AwpfocTheme(dynamicColor = false) {
-        val showDialog = remember{ mutableStateOf(true) }
+        val showDialog = remember { mutableStateOf(true) }
         PhonePermissionPopup(showDialog)
     }
 }

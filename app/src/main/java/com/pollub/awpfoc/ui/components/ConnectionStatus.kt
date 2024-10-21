@@ -37,14 +37,16 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.wrapContentHeight().weight(1f)) {
+        Column(modifier = Modifier
+            .wrapContentHeight()
+            .weight(1f)) {
             Text(
                 text = label,
                 fontSize = 16.sp,
-                color =  MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onPrimary
             )
             Text(
-                text = if(isActive) "Aktywny" else "Nie aktywny",
+                text = if (isActive) "Aktywny" else "Nie aktywny",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onTertiaryContainer
             )
@@ -56,7 +58,7 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
                 .clip(CircleShape)
                 .background(Color.Gray)
 
-        ){
+        ) {
             Box(
                 modifier = Modifier
                     .size(18.dp)
@@ -73,6 +75,6 @@ fun ConnectionStatus(label: String, isActive: Boolean) {
 @Composable
 fun ConnectionStatusPreview() {
     AwpfocTheme(dynamicColor = false) {
-        ConnectionStatus("Stan połączenia",true)
+        ConnectionStatus("Stan połączenia", true)
     }
 }

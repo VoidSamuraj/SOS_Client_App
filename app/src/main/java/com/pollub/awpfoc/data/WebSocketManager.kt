@@ -19,7 +19,11 @@ object WebSocketManager {
                     isConnected = true
                 }
 
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: okhttp3.Response?) {
+                override fun onFailure(
+                    webSocket: WebSocket,
+                    t: Throwable,
+                    response: okhttp3.Response?
+                ) {
                     isConnected = false
                     t.printStackTrace()
                 }
