@@ -1,8 +1,13 @@
 package com.pollub.awpfoc.network
 
+import com.google.gson.JsonParser
+import com.pollub.awpfoc.BASE_URL
 import com.pollub.awpfoc.data.ApiService
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -16,8 +21,7 @@ import javax.net.ssl.X509TrustManager
 /**
  * Singleton object to manage the Retrofit client configuration.
  */
-object RetrofitClient {
-    private const val BASE_URL = "https://10.0.2.2:8443/"
+object NetworkClient {
 
     // OkHttpClient instance configured with SSL settings and request interceptors.
     private val client = OkHttpClient.Builder()
@@ -59,6 +63,86 @@ object RetrofitClient {
             .build()
             .create(ApiService::class.java)
     }
+
+    object WebSocketManager {
+
+        var  lastReportId:Int=-1
+            private set
+        private var closeCode:Int?=null
+
+        fun setCloseCode(code:Int){
+            closeCode=code
+        }
+        private var executeOnStart:(()->Unit)?=null
+        private var executeOnClose:(()->Unit)?=null
+
+        fun executeOnStart(onStart:()->Unit){
+            executeOnStart=onStart
+        }
+        fun executeOnClose(onClose:()->Unit){
+            executeOnClose=onClose
+        }
+        private lateinit var webSocket: WebSocket
+        private var isConnected = false
+
+        fun connect(url: String) {
+            closeCode=null
+            if (!isConnected) {
+                val request = Request.Builder().url(url).build()
+                webSocket = client.newWebSocket(request, object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
+                        isConnected = true
+                    }
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        val jsonObject = JsonParser.parseString(text).asJsonObject
+                        if(jsonObject.has("reportId")){
+                            lastReportId = jsonObject.get("reportId").asInt
+                            executeOnStart?.invoke()
+                        }
+                        println("Received message: $text")
+                    }
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: okhttp3.Response?
+                    ) {
+                        isConnected = false
+                        t.printStackTrace()
+                    }
+
+                    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                        isConnected = false
+                    }
+                })
+            }
+        }
+
+        fun sendMessage(message: String) {
+            if (isConnected) {
+                webSocket.send(message)
+            } else {
+                // Optional: Handle disconnected state or reconnect
+            }
+        }
+
+
+        fun disconnect() {
+            if (isConnected) {
+                executeOnClose?.invoke()
+                if(closeCode!=null)
+                    if(closeCode==4000){
+                        webSocket.close(closeCode!!, """{"reportId": $lastReportId}""")
+                    }else{
+                        webSocket.close(closeCode!!, "Disconnect")
+                    }
+                else
+                    webSocket.close(1000, "Disconnect")
+                isConnected = false
+                closeCode=null
+            }
+        }
+    }
+
 
     //Custom sslFactory to allow all certs
     private fun createTrustAllSslSocketFactory(): SSLSocketFactory {

@@ -33,6 +33,7 @@ import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.CustomerInfo
 import com.pollub.awpfoc.navigation.NavRoutes
 import com.pollub.awpfoc.navigation.RegisterNavRoutes
+import com.pollub.awpfoc.network.NetworkClient
 import com.pollub.awpfoc.service.LocationService
 import com.pollub.awpfoc.supportPhoneNumber
 import com.pollub.awpfoc.ui.components.EditUserDataScreen
@@ -107,10 +108,13 @@ fun AppUI(
                         modifier = Modifier.padding(innerPadding),
                         phoneNumber = supportPhoneNumber,
                         requestCallPermissionLauncher = requestCallPermissionLauncher,
-                        onCallSOS = {
+                        onCallSOS = {onSuccess ->
+                            NetworkClient.WebSocketManager.executeOnStart { onSuccess() }
                             mainActivity.startService(locationServiceIntent)
                         },
-                        onCancelSOS = {
+                        onCancelSOS = { onSuccess->
+                            NetworkClient.WebSocketManager.executeOnClose { onSuccess() }
+                            NetworkClient.WebSocketManager.setCloseCode(4000)
                             mainActivity.stopService(locationServiceIntent)
                         }
                     )

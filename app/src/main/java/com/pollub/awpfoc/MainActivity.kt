@@ -20,6 +20,8 @@ import com.pollub.awpfoc.utils.makePhoneCall
 import com.pollub.awpfoc.viewmodel.AppViewModel
 
 val supportPhoneNumber = "+48123456789"
+const val BASE_URL = "https://10.0.2.2:8443/"
+const val BASE_WEBSOCKET_URL = "wss://10.0.2.2:8443/clientSocket"
 
 class MainActivity : ComponentActivity() {
 
@@ -51,21 +53,19 @@ class MainActivity : ComponentActivity() {
             val allGranted = permissions.all { it.value }
             setContent {
                 AwpfocTheme(dynamicColor = false) {
-                    CheckPermissions(this, requestPermissionsLauncher) {
-                        val lighterColor = MaterialTheme.colorScheme.secondary.toArgb()
-                        val darkerColor = MaterialTheme.colorScheme.primary.toArgb()
-                        EnableEdgeToEdgeAndSetBarTheme(lighterColor, darkerColor)
-                        if (allGranted) {
-                            AppUI(
-                                this,
-                                viewModel,
-                                requestCallPermissionLauncher
-                            )
-                        } else {
-                            PermissionsInfoScreen()
-                        }
-                        PhonePermissionPopup(showDialog)
+                    val lighterColor = MaterialTheme.colorScheme.secondary.toArgb()
+                    val darkerColor = MaterialTheme.colorScheme.primary.toArgb()
+                    EnableEdgeToEdgeAndSetBarTheme(lighterColor, darkerColor)
+                    if (allGranted) {
+                        AppUI(
+                            this,
+                            viewModel,
+                            requestCallPermissionLauncher
+                        )
+                    } else {
+                        PermissionsInfoScreen()
                     }
+                    PhonePermissionPopup(showDialog)
                 }
             }
         }

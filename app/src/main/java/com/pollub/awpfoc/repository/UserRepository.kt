@@ -5,7 +5,7 @@ import com.pollub.awpfoc.data.ApiService
 import com.pollub.awpfoc.data.models.Credentials
 import com.pollub.awpfoc.data.models.Customer
 import com.pollub.awpfoc.data.models.CustomerInfo
-import com.pollub.awpfoc.network.RetrofitClient
+import com.pollub.awpfoc.network.NetworkClient
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -15,7 +15,7 @@ import retrofit2.Response
  */
 class UserRepository {
     // Instance of ApiService for making network requests
-    private val apiService: ApiService = RetrofitClient.instance
+    private val apiService: ApiService = NetworkClient.instance
 
     /**
      * Checks if a given login is already used in the system.

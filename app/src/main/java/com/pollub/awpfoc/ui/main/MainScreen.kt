@@ -33,8 +33,8 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     phoneNumber: String? = null,
     requestCallPermissionLauncher: ActivityResultLauncher<String>? = null,
-    onCallSOS: () -> Unit,
-    onCancelSOS: () -> Unit,
+    onCallSOS: (onSuccess:() -> Unit) -> Unit,
+    onCancelSOS: (onSuccess:() -> Unit) -> Unit,
 ) {
 
     val isSystemConnected = remember { mutableStateOf(false) }
@@ -52,14 +52,14 @@ fun MainScreen(
         ConnectionStatus("Status połączenia z bazą", isActive = isSystemConnected.value)
         ConnectionStatus("Status połączenia ze smartwatch", isActive = isSmartWatchConnected.value)
 
-        Spacer(modifier = Modifier.height(40.dp))
         Spacer(modifier = Modifier.weight(1f))
 
         SOSButton(
             isSosActive = isSosActive,
             onButtonClick = {
-                isSosActive.value = true
-                onCallSOS()
+                onCallSOS(){
+                    isSosActive.value = true
+                }
             })
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -67,8 +67,9 @@ fun MainScreen(
         CallMenu(
             isCancelButtonVisible = isSosActive.value,
             onCancelClick = {
-                isSosActive.value = false
-                onCancelSOS()
+                onCancelSOS(){
+                    isSosActive.value = false
+                }
             },
             phoneNumber = phoneNumber,
             requestPermissionLauncher = requestCallPermissionLauncher
