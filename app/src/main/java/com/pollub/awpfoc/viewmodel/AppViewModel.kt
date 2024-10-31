@@ -1,9 +1,11 @@
 package com.pollub.awpfoc.viewmodel
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.CustomerInfo
+import com.pollub.awpfoc.network.NetworkClient.WebSocketManager
 import com.pollub.awpfoc.repository.UserRepository
 
 /**
@@ -13,6 +15,12 @@ import com.pollub.awpfoc.repository.UserRepository
  */
 class AppViewModel : ViewModel() {
     private val userRepository = UserRepository()
+
+    val isSystemConnected = mutableStateOf(false)
+    val isSmartWatchConnected =  mutableStateOf(false)
+    val isSosActive =  mutableStateOf(false)
+
+    fun getIsSystemConnecting() = WebSocketManager.isConnecting
 
     /**
      * Checks if the provided login is not already in use.

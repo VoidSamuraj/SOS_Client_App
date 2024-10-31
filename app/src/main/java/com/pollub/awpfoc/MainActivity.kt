@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModelProvider
 import com.pollub.awpfoc.data.SharedPreferencesManager
+import com.pollub.awpfoc.network.NetworkClient
 import com.pollub.awpfoc.ui.components.PermissionsInfoScreen
 import com.pollub.awpfoc.ui.components.PhonePermissionPopup
 import com.pollub.awpfoc.ui.main.AppUI
@@ -31,12 +32,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var requestCallPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var viewModel: AppViewModel
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         SharedPreferencesManager.init(this)
         viewModel = ViewModelProvider(this).get(AppViewModel::class.java)
+        NetworkClient.WebSocketManager.setViewModel(viewModel)
         requestCallPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->

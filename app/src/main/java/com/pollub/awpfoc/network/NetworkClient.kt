@@ -1,9 +1,15 @@
 package com.pollub.awpfoc.network
 
+import androidx.compose.runtime.mutableStateOf
 import com.google.gson.JsonParser
 import com.pollub.awpfoc.BASE_URL
 import com.pollub.awpfoc.data.ApiService
 import com.pollub.awpfoc.data.SharedPreferencesManager
+import com.pollub.awpfoc.viewmodel.AppViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -65,6 +71,19 @@ object NetworkClient {
     }
 
     object WebSocketManager {
+        private var viewModel: AppViewModel? = null
+
+        val isConnecting = mutableStateOf(false)
+
+        fun setViewModel(vm: AppViewModel) {
+            viewModel = vm
+        }
+        var onReportFinish:()->Unit={}
+
+        fun setOnReportFinished(onFinish:()->Unit){
+            onReportFinish=onFinish
+        }
+        var isServiceStopping= false
 
         var  lastReportId:Int=-1
             private set
@@ -84,14 +103,30 @@ object NetworkClient {
         }
         private lateinit var webSocket: WebSocket
         private var isConnected = false
+        private fun setIsConnected(connected: Boolean){
+            isConnected=connected
+            viewModel?.isSystemConnected?.value=connected
+        }
+
+        private fun reconnectWithDelay(url: String) {
+            isConnecting.value= true
+            CoroutineScope(Dispatchers.IO).launch() {
+                delay(5_000L)
+                if (!isServiceStopping) {
+                    connect(url)
+                }
+            }
+        }
 
         fun connect(url: String) {
+            isServiceStopping = false
             closeCode=null
             if (!isConnected) {
                 val request = Request.Builder().url(url).build()
                 webSocket = client.newWebSocket(request, object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
-                        isConnected = true
+                        setIsConnected(true)
+                        isConnecting.value= false
                     }
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         val jsonObject = JsonParser.parseString(text).asJsonObject
@@ -99,19 +134,31 @@ object NetworkClient {
                             lastReportId = jsonObject.get("reportId").asInt
                             executeOnStart?.invoke()
                         }
-                        println("Received message: $text")
+                        if(jsonObject.has("status") && jsonObject.get("status").asString == "finished"){
+                            lastReportId = -1
+                            viewModel?.isSosActive?.value=false
+                            //todo change to https request
+                            viewModel?.isSystemConnected?.value=false
+                            onReportFinish()
+                        }
                     }
                     override fun onFailure(
                         webSocket: WebSocket,
                         t: Throwable,
                         response: okhttp3.Response?
                     ) {
-                        isConnected = false
+                        setIsConnected(false)
                         t.printStackTrace()
+                        if (!isServiceStopping) {
+                            reconnectWithDelay(url)
+                        }
                     }
 
                     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                        isConnected = false
+                        setIsConnected(false)
+                        if (!isServiceStopping) {
+                            reconnectWithDelay(url)
+                        }
                     }
                 })
             }
@@ -127,6 +174,7 @@ object NetworkClient {
 
 
         fun disconnect() {
+            isServiceStopping = true
             if (isConnected) {
                 executeOnClose?.invoke()
                 if(closeCode!=null)
@@ -137,9 +185,10 @@ object NetworkClient {
                     }
                 else
                     webSocket.close(1000, "Disconnect")
-                isConnected = false
-                closeCode=null
             }
+            setIsConnected(false)
+            lastReportId=-1
+            closeCode=null
         }
     }
 

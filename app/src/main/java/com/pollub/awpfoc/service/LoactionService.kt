@@ -34,15 +34,14 @@ class LocationService : Service() {
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
-    var customerId :Int?=null
+    var customerId: Int? = null
 
     override fun onCreate() {
         super.onCreate()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         customerId = SharedPreferencesManager.getUser().toCustomerInfo().id
         startForeground(1, createNotification())
-
-
+        WebSocketManager.setOnReportFinished { stopSelf() }
         WebSocketManager.connect(BASE_WEBSOCKET_URL)
         sendStartupInfo()
     }
@@ -80,7 +79,10 @@ class LocationService : Service() {
                                 WebSocketManager.sendMessage(locationData)
                                 Log.d("LocationService", "Initial location sent")
                             } catch (e: Exception) {
-                                Log.e("LocationService", "Error sending initial location: ${e.message}")
+                                Log.e(
+                                    "LocationService",
+                                    "Error sending initial location: ${e.message}"
+                                )
                             }
                         }
                         fusedLocationClient.removeLocationUpdates(this) // Wyłącz po pierwszym odczycie
@@ -114,7 +116,7 @@ class LocationService : Service() {
     }
 
     private fun sendLocationToServer(location: Location) {
-        if(WebSocketManager.lastReportId!=-1) {
+        if (WebSocketManager.lastReportId != -1) {
             val locationData = """
                             {"reportId":${WebSocketManager.lastReportId},"userId":${customerId},"latitude": ${location.latitude}, "longitude": ${location.longitude}}
                             """.trimIndent()

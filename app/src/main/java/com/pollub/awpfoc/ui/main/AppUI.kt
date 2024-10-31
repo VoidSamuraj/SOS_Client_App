@@ -106,6 +106,7 @@ fun AppUI(
                 ) { innerPadding ->
                     MainScreen(
                         modifier = Modifier.padding(innerPadding),
+                        viewModel= viewModel,
                         phoneNumber = supportPhoneNumber,
                         requestCallPermissionLauncher = requestCallPermissionLauncher,
                         onCallSOS = {onSuccess ->
