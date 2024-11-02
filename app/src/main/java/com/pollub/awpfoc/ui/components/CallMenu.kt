@@ -17,6 +17,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -35,6 +38,7 @@ import com.pollub.awpfoc.utils.makePhoneCall
  * Composable function that displays a call menu with an optional cancel button and a call button.
  *
  * @param isCancelButtonVisible Boolean indicating if the cancel button should be displayed.
+ * @param isSystemConnecting MutableState<Boolean> that indicates whether the SOS feature is still connecting/reconnecting.
  * @param onCancelClick Lambda function to be executed when the cancel button is clicked.
  * @param phoneNumber Optional phone number to be used for making a call.
  * @param requestPermissionLauncher Optional launcher for requesting permissions needed for calling.
@@ -42,6 +46,7 @@ import com.pollub.awpfoc.utils.makePhoneCall
 @Composable
 fun CallMenu(
     isCancelButtonVisible: Boolean,
+    isSystemConnecting: MutableState<Boolean>,
     onCancelClick: () -> Unit,
     phoneNumber: String? = null,
     requestPermissionLauncher: ActivityResultLauncher<String>? = null
@@ -58,7 +63,8 @@ fun CallMenu(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                 shape = RoundedCornerShape(20.dp),
                 modifier = Modifier
-                    .height(80.dp)
+                    .height(80.dp),
+                enabled = !isSystemConnecting.value
             ) {
                 Text(
                     text = "ANULUJ SOS",
@@ -110,6 +116,7 @@ fun CallButton(
 @Composable
 fun CallPreview() {
     AwpfocTheme(dynamicColor = false) {
-        CallMenu(true, {}, "2137")
+        val isConnecting = remember{mutableStateOf(false)}
+        CallMenu(true,isConnecting, {}, "2137")
     }
 }

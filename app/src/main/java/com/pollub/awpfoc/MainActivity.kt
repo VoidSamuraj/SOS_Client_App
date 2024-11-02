@@ -34,10 +34,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         SharedPreferencesManager.init(this)
-        viewModel = ViewModelProvider(this).get(AppViewModel::class.java)
+        viewModel = ViewModelProvider(this)[AppViewModel::class.java]
         NetworkClient.WebSocketManager.setViewModel(viewModel)
+
+        lifecycle.addObserver(
+            viewModel.ObserveIfConnectionAvaliable(
+                this,
+                invokeIfConnected = {
+                    viewModel.isSystemConnected.value=true
+                },
+                invokeIfDisconnected = {
+                    viewModel.isSystemConnected.value=false
+                })
+        )
+
         requestCallPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->

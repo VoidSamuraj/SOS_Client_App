@@ -47,6 +47,21 @@ class UserRepository {
         })
     }
 
+    fun isConnected(onSuccess: () -> Unit, onFailure: () -> Unit){
+        apiService.isConnectionAvailable().enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onFailure()
+                }
+            }
+            override fun onFailure(call: Call<Void?>, t: Throwable) {
+                onFailure()
+            }
+        })
+    }
+
     /**
      * Logs a user into the system by verifying credentials.
      *

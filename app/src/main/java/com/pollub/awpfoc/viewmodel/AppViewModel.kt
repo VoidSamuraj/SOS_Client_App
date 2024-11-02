@@ -2,11 +2,20 @@ package com.pollub.awpfoc.viewmodel
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.CustomerInfo
 import com.pollub.awpfoc.network.NetworkClient.WebSocketManager
 import com.pollub.awpfoc.repository.UserRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel that manages user authentication and customer-related operations in the application.
@@ -17,8 +26,8 @@ class AppViewModel : ViewModel() {
     private val userRepository = UserRepository()
 
     val isSystemConnected = mutableStateOf(false)
-    val isSmartWatchConnected =  mutableStateOf(false)
-    val isSosActive =  mutableStateOf(false)
+    val isSmartWatchConnected = mutableStateOf(false)
+    val isSosActive = mutableStateOf(false)
 
     fun getIsSystemConnecting() = WebSocketManager.isConnecting
 
@@ -211,5 +220,41 @@ class AppViewModel : ViewModel() {
             }
             Log.e("AuthViewModel", error ?: "Unknown error")
         })
+    }
+
+    fun checkIfConnected(onSuccess: () -> Unit,onFailure: () -> Unit){
+        userRepository.isConnected(onSuccess = onSuccess, onFailure = onFailure)
+    }
+
+    inner class ObserveIfConnectionAvaliable(
+        private val lifecycleOwner: LifecycleOwner,
+        private val invokeIfConnected: () -> Unit,
+        private val invokeIfDisconnected: () -> Unit
+    ) : DefaultLifecycleObserver {
+
+        private var job: Job? = null
+        private var delay_time = 10_000L
+        override fun onStart(owner: LifecycleOwner) {
+            job = CoroutineScope(Dispatchers.Main).launch() {
+                while (isActive && lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    if (WebSocketManager.isServiceStopping) {
+                        checkIfConnected(onSuccess = {
+                            delay_time = 15_000L
+                            invokeIfConnected()
+                        },
+                            onFailure = {
+                                delay_time = 5_000L
+                                invokeIfDisconnected()
+                            })
+                    println("CHECKING CONNECTION")
+                    }
+                    delay(delay_time)
+                }
+            }
+        }
+
+        override fun onStop(owner: LifecycleOwner) {
+            job?.cancel()
+        }
     }
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,23 +34,42 @@ import com.pollub.awpfoc.utils.drawShadow
  * The button animates its background color and shadow color when the SOS is active.
  *
  * @param isSosActive MutableState<Boolean> that indicates whether the SOS feature is active.
+ * @param isSystemConnecting MutableState<Boolean> that indicates whether the SOS feature is still connecting/reconnecting.
  * @param onButtonClick Lambda function to be executed when the button is clicked.
  */
 @Composable
-fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: () -> Unit) {
+fun SOSButton(
+    isSosActive: MutableState<Boolean>,
+    isSystemConnecting: MutableState<Boolean>,
+    onButtonClick: () -> Unit
+) {
 
     val infiniteTransition = rememberInfiniteTransition()
-
+    val initialColor = if (isSystemConnecting.value) {
+        Color.Red.copy(alpha = 0.5f).compositeOver(Color.Gray)
+    } else {
+        Color.Red
+    }
+    val targetColor = if (isSystemConnecting.value) {
+        Color.Black.copy(alpha = 0.5f).compositeOver(Color.Gray)
+    } else {
+        Color.Black
+    }
+    val shadowAlpha = if (isSystemConnecting.value) {
+        0.4f
+    } else {
+        0.8f
+    }
     val buttonColor = infiniteTransition.animateColor(
-        initialValue = Color.Red,
-        targetValue = Color.Black,
+        initialValue = initialColor,
+        targetValue = targetColor,
         animationSpec = infiniteRepeatable(
             animation = tween(1000),
             repeatMode = RepeatMode.Reverse
         ), label = "buttonColor"
     )
     val shadowColor = infiniteTransition.animateColor(
-        initialValue = Color.Red.copy(alpha = .8f),
+        initialValue = Color.Red.copy(alpha = shadowAlpha),
         targetValue = Color.Transparent,
         animationSpec = infiniteRepeatable(
             animation = tween(1000),
@@ -58,7 +78,10 @@ fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: () -> Unit) {
     )
 
     Button(
-        onClick = onButtonClick,
+        onClick = {
+            if (!(isSosActive.value || isSystemConnecting.value))
+                onButtonClick()
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSosActive.value) buttonColor.value else Color(
                 0xFF4A5061
@@ -90,6 +113,7 @@ fun SOSButton(isSosActive: MutableState<Boolean>, onButtonClick: () -> Unit) {
 fun SOSButtonPreview() {
     AwpfocTheme(dynamicColor = false) {
         val isSosActive = remember { mutableStateOf(true) }
-        SOSButton(isSosActive, {})
+        val isReconnecting = remember { mutableStateOf(true) }
+        SOSButton(isSosActive, isReconnecting, {})
     }
 }

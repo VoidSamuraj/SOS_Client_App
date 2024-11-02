@@ -25,6 +25,9 @@ interface ApiService {
     @GET("auth/client/isLoginUsed")
     fun isLoginUsed(@Query("login") login: String): Call<Boolean>
 
+    @GET("action/client/checkConnection")
+    fun isConnectionAvailable(): Call<Void>
+
     /**
      * Registers a new client with the provided details.
      *

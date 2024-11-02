@@ -78,38 +78,43 @@ object NetworkClient {
         fun setViewModel(vm: AppViewModel) {
             viewModel = vm
         }
-        var onReportFinish:()->Unit={}
 
-        fun setOnReportFinished(onFinish:()->Unit){
-            onReportFinish=onFinish
+        var onReportFinish: () -> Unit = {}
+
+        fun setOnReportFinished(onFinish: () -> Unit) {
+            onReportFinish = onFinish
         }
-        var isServiceStopping= false
 
-        var  lastReportId:Int=-1
+        var isServiceStopping = true
+
+        var lastReportId: Int = -1
             private set
-        private var closeCode:Int?=null
+        private var closeCode: Int? = null
 
-        fun setCloseCode(code:Int){
-            closeCode=code
+        fun setCloseCode(code: Int) {
+            closeCode = code
         }
-        private var executeOnStart:(()->Unit)?=null
-        private var executeOnClose:(()->Unit)?=null
 
-        fun executeOnStart(onStart:()->Unit){
-            executeOnStart=onStart
+        private var executeOnStart: (() -> Unit)? = null
+        private var executeOnClose: (() -> Unit)? = null
+
+        fun executeOnStart(onStart: () -> Unit) {
+            executeOnStart = onStart
         }
-        fun executeOnClose(onClose:()->Unit){
-            executeOnClose=onClose
+
+        fun executeOnClose(onClose: () -> Unit) {
+            executeOnClose = onClose
         }
+
         private lateinit var webSocket: WebSocket
         private var isConnected = false
-        private fun setIsConnected(connected: Boolean){
-            isConnected=connected
-            viewModel?.isSystemConnected?.value=connected
+        private fun setIsConnected(connected: Boolean) {
+            isConnected = connected
+            viewModel?.isSystemConnected?.value = connected
         }
 
         private fun reconnectWithDelay(url: String) {
-            isConnecting.value= true
+            isConnecting.value = true
             CoroutineScope(Dispatchers.IO).launch() {
                 delay(5_000L)
                 if (!isServiceStopping) {
@@ -120,28 +125,41 @@ object NetworkClient {
 
         fun connect(url: String) {
             isServiceStopping = false
-            closeCode=null
+            closeCode = null
             if (!isConnected) {
                 val request = Request.Builder().url(url).build()
                 webSocket = client.newWebSocket(request, object : WebSocketListener() {
                     override fun onOpen(webSocket: WebSocket, response: okhttp3.Response) {
                         setIsConnected(true)
-                        isConnecting.value= false
                     }
+
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         val jsonObject = JsonParser.parseString(text).asJsonObject
-                        if(jsonObject.has("reportId")){
+                        if (jsonObject.has("reportId")) {
                             lastReportId = jsonObject.get("reportId").asInt
                             executeOnStart?.invoke()
+                            setIsConnected(true)
+                            isConnecting.value = false
                         }
-                        if(jsonObject.has("status") && jsonObject.get("status").asString == "finished"){
-                            lastReportId = -1
-                            viewModel?.isSosActive?.value=false
-                            //todo change to https request
-                            viewModel?.isSystemConnected?.value=false
-                            onReportFinish()
+                        if (jsonObject.has("status")) {
+                            when (jsonObject.get("status").asString) {
+                                "finished" -> {
+                                    lastReportId = -1
+                                    viewModel?.isSosActive?.value = false
+                                    //todo change to https request
+                                    //viewModel?.isSystemConnected?.value=false
+                                    onReportFinish()
+                                }
+
+                                "reconnected" -> {
+                                    setIsConnected(true)
+                                    isConnecting.value = false
+                                    executeOnStart?.invoke()
+                                }
+                            }
                         }
                     }
+
                     override fun onFailure(
                         webSocket: WebSocket,
                         t: Throwable,
@@ -158,6 +176,10 @@ object NetworkClient {
                         setIsConnected(false)
                         if (!isServiceStopping) {
                             reconnectWithDelay(url)
+                        } else {
+                            viewModel?.checkIfConnected(
+                                onSuccess = { viewModel!!.isSystemConnected.value = true },
+                                onFailure = { viewModel!!.isSystemConnected.value = false })
                         }
                     }
                 })
@@ -177,18 +199,18 @@ object NetworkClient {
             isServiceStopping = true
             if (isConnected) {
                 executeOnClose?.invoke()
-                if(closeCode!=null)
-                    if(closeCode==4000){
+                if (closeCode != null)
+                    if (closeCode == 4000) {
                         webSocket.close(closeCode!!, """{"reportId": $lastReportId}""")
-                    }else{
+                    } else {
                         webSocket.close(closeCode!!, "Disconnect")
                     }
                 else
                     webSocket.close(1000, "Disconnect")
             }
             setIsConnected(false)
-            lastReportId=-1
-            closeCode=null
+            lastReportId = -1
+            closeCode = null
         }
     }
 

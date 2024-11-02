@@ -62,6 +62,7 @@ fun MainScreen(
 
         SOSButton(
             isSosActive = viewModel.isSosActive,
+            isSystemConnecting = viewModel.getIsSystemConnecting(),
             onButtonClick = {
                 onCallSOS(){
                     viewModel.isSosActive.value = true
@@ -72,6 +73,7 @@ fun MainScreen(
 
         CallMenu(
             isCancelButtonVisible = viewModel.isSosActive.value,
+            isSystemConnecting = viewModel.getIsSystemConnecting(),
             onCancelClick = {
                 onCancelSOS(){
                     viewModel.isSosActive.value = false

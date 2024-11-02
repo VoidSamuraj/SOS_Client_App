@@ -85,12 +85,32 @@ class LocationService : Service() {
                                 )
                             }
                         }
-                        fusedLocationClient.removeLocationUpdates(this) // Wyłącz po pierwszym odczycie
+                        fusedLocationClient.removeLocationUpdates(this)
                     }
                 }
             },
             Looper.getMainLooper()
         )
+    }
+
+    fun sendReconnectMessage(
+        location: Location
+    ) {
+        val locationData = """
+                        {"reconnectMessage":true, "userId":${customerId},"latitude": ${location.latitude}, "longitude": ${location.longitude}}
+                    """.trimIndent()
+
+        scope.launch {
+            try {
+                WebSocketManager.sendMessage(locationData)
+                Log.d("LocationService", "Initial location sent")
+            } catch (e: Exception) {
+                Log.e(
+                    "LocationService",
+                    "Error sending initial location: ${e.message}"
+                )
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -107,7 +127,10 @@ class LocationService : Service() {
             object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     for (location in locationResult.locations) {
-                        sendLocationToServer(location)
+                        if (WebSocketManager.isConnecting.value)
+                            sendReconnectMessage(location)
+                        else
+                            sendLocationToServer(location)
                     }
                 }
             },
