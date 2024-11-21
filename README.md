@@ -14,7 +14,7 @@
 <img src="https://img.shields.io/badge/Notifications-Android-purple?color=5C2D91" alt="Notifications Android"> 
 </p>
 
-### Purpose:
+## Purpose:
 The SOS application is designed to support the operations of a security company by automating and speeding up processes related to handling emergency requests. It ensures that users get quick and effective help in critical situations.
 It works with <a href="https://github.com/VoidSamuraj/SOS_Server" target="_blank">SOS Server</a> and <a href="https://github.com/VoidSamuraj/SOS_Guard_App" target="_blank">SOS Guard</a>
 
@@ -25,7 +25,7 @@ It works with <a href="https://github.com/VoidSamuraj/SOS_Server" target="_blank
 - **Location Updates**: The client’s location is updated at short intervals for accurate tracking and quick response.
 - **Cancel or Direct Call**: The client can cancel the SOS alert or directly call the alarm center if needed.
 
-### Technologies:
+## Technologies:
 - **Kotlin**: A statically typed programming language compatible with Java, ideal for cross-platform development.
 - **Jetpack Compose**: A framework for building modern UIs for Android apps in a declarative way.
 - **WebSocket**: For real-time communication with the server.
@@ -44,5 +44,5 @@ const val address="10.0.2.2:8443" //default local intelij adress(make sure it us
 ```
 You probably also wanna to enable keystore cert checking (temporaty turned off) in `NetworkClient`
 
-### Getting Started:
+## Getting Started:
 To start using the application, install it and register with your details. Make sure your location services are enabled for real-time tracking and navigation.
