@@ -1,6 +1,8 @@
 package com.pollub.awpfoc
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -17,12 +19,19 @@ import com.pollub.awpfoc.ui.main.AppUI
 import com.pollub.awpfoc.ui.theme.AwpfocTheme
 import com.pollub.awpfoc.utils.CheckPermissions
 import com.pollub.awpfoc.utils.EnableEdgeToEdgeAndSetBarTheme
+import com.pollub.awpfoc.utils.TokenManager
 import com.pollub.awpfoc.utils.makePhoneCall
 import com.pollub.awpfoc.viewmodel.AppViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 val supportPhoneNumber = "+48123456789"
-const val BASE_URL = "https://10.0.2.2:8443/"
-const val BASE_WEBSOCKET_URL = "wss://10.0.2.2:8443/clientSocket"
+//debug
+//10.0.2.2:8443
+const val address="10.0.2.2:8443"
+const val BASE_URL = "https://$address/"
+const val BASE_WEBSOCKET_URL = "wss://$address/clientSocket"
 
 class MainActivity : ComponentActivity() {
 
@@ -32,6 +41,19 @@ class MainActivity : ComponentActivity() {
     private lateinit var requestCallPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var viewModel: AppViewModel
 
+    private val handler = Handler(Looper.getMainLooper())
+    private val refreshInterval = TokenManager.TOKEN_EXPIRATION_THRESHOLD*500
+
+    private val refreshTask = object : Runnable {
+        override fun run() {
+
+            CoroutineScope(Dispatchers.Default).launch{
+                TokenManager.refreshTokenIfNeeded()
+            }
+            handler.postDelayed(this, refreshInterval)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SharedPreferencesManager.init(this)
@@ -39,7 +61,7 @@ class MainActivity : ComponentActivity() {
         NetworkClient.WebSocketManager.setViewModel(viewModel)
 
         lifecycle.addObserver(
-            viewModel.ObserveIfConnectionAvaliable(
+            viewModel.ObserveIfConnectionAvailable(
                 this,
                 invokeIfConnected = {
                     viewModel.isSystemConnected.value=true
@@ -48,6 +70,8 @@ class MainActivity : ComponentActivity() {
                     viewModel.isSystemConnected.value=false
                 })
         )
+
+        handler.post(refreshTask)
 
         requestCallPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -96,5 +120,10 @@ class MainActivity : ComponentActivity() {
                 PhonePermissionPopup(showDialog)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(refreshTask)
     }
 }

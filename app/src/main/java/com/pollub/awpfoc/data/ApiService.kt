@@ -2,7 +2,10 @@ package com.pollub.awpfoc.data
 
 import com.pollub.awpfoc.data.models.Credentials
 import com.pollub.awpfoc.data.models.CustomerInfo
+import com.pollub.awpfoc.data.models.JWTToken
+import com.pollub.awpfoc.data.models.TokenResponse
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -25,6 +28,9 @@ interface ApiService {
     @GET("auth/client/isLoginUsed")
     fun isLoginUsed(@Query("login") login: String): Call<Boolean>
 
+    /**
+     *  empty call checking if connection is available
+     */
     @GET("action/client/checkConnection")
     fun isConnectionAvailable(): Call<Void>
 
@@ -38,7 +44,7 @@ interface ApiService {
      * @param email The email address of the new client.
      * @param phone The phone number of the new client.
      * @param pesel The PESEL number of the new client.
-     * @return A [Call] that returns a pair containing a status message and the registered [CustomerInfo].
+     * @return A [Call] that returns a Triple containing a login, registered [CustomerInfo], and [JWTToken].
      */
     @FormUrlEncoded
     @POST("auth/client/register")
@@ -50,22 +56,22 @@ interface ApiService {
         @Field("email") email: String,
         @Field("phone") phone: String,
         @Field("pesel") pesel: String
-    ): Call<Pair<String, CustomerInfo>>
+    ): Call<Triple<String, CustomerInfo, JWTToken>>
 
     /**
      * Logs in a client using their credentials.
      *
      * @param credentials The login credentials of the client.
-     * @return A [Call] that returns a pair containing a status message and the [CustomerInfo] of the logged-in client.
+     * @return A [Call] that returns a Triple containing a login, registered [CustomerInfo], and [JWTToken].
      */
     @POST("auth/client/login")
-    fun loginClient(@Body credentials: Credentials): Call<Pair<String, CustomerInfo>>
+    fun loginClient(@Body credentials: Credentials): Call<Triple<String, CustomerInfo, JWTToken>>
 
     /**
      * Checks the validity of the client's session token.
      *
      * @param token The session token to check.
-     * @return A [Call] that returns a pair containing a status message and the associated [CustomerInfo].
+     * @return A [Call] that returns a pair containing a login and the associated [CustomerInfo].
      */
     @POST("auth/client/checkToken")
     fun checkClientToken(@Body token: String): Call<Pair<String, CustomerInfo>>
@@ -115,4 +121,26 @@ interface ApiService {
         @Field("phone") phone: String?,
         @Field("pesel") pesel: String?
     ): Call<Pair<String, CustomerInfo>>
+
+    /**
+     *  Retrieves the new [TokenResponse.accessToken]
+     *
+     *  @param refreshToken valid RefreshToken
+     *  @return [TokenResponse] with new [TokenResponse.accessToken]
+     */
+    @POST("auth/client/refresh_token")
+    suspend fun refreshToken(
+        @Body refreshToken: String
+    ): Response<TokenResponse>
+
+    /**
+     *  Retrieves the new [TokenResponse] containing [TokenResponse.refreshToken] and [TokenResponse.accessToken]
+     *
+     *  @param refreshToken valid RefreshToken
+     *  @return [TokenResponse] with two new tokens
+     */
+    @POST("auth/client/refresh_refresh_token")
+    suspend fun refreshRefreshToken(
+        @Body refreshToken: String
+    ): Response<TokenResponse>
 }

@@ -8,8 +8,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.CustomerInfo
+import com.pollub.awpfoc.network.NetworkClient
 import com.pollub.awpfoc.network.NetworkClient.WebSocketManager
-import com.pollub.awpfoc.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
  * password reminders, and token validation. SharedPreferencesManager is used to save or clear user data.
  */
 class AppViewModel : ViewModel() {
-    private val userRepository = UserRepository()
 
     val isSystemConnected = mutableStateOf(false)
     val isSmartWatchConnected = mutableStateOf(false)
@@ -39,7 +38,7 @@ class AppViewModel : ViewModel() {
      * @param onFailure Callback function to be executed with an error message if the login is already used or if an error occurs.
      */
     fun isLoginNotUsed(login: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        userRepository.isLoginUsed(login, onSuccess = { isUsed ->
+        NetworkClient.userRepository.isLoginUsed(login, onSuccess = { isUsed ->
             if (isUsed)
                 onFailure("Login is already used")
             else
@@ -67,9 +66,12 @@ class AppViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (message: String) -> Unit
     ) {
-        userRepository.login(login, password) { client, error ->
+        NetworkClient.userRepository.login(login, password) { client, error, longTimeToken ->
             if (client != null) {
                 SharedPreferencesManager.saveUser(client)
+                longTimeToken?.let {
+                    SharedPreferencesManager.saveSecureToken(it)
+                }
                 onSuccess()
             } else {
                 error?.let {
@@ -87,9 +89,10 @@ class AppViewModel : ViewModel() {
      * @param onFailure Callback function to be executed with an error message if logout fails.
      */
     fun logout(onSuccess: () -> Unit, onFailure: (message: String) -> Unit) {
-        userRepository.logout { success, error ->
+        NetworkClient.userRepository.logout { success, error ->
             if (success) {
                 SharedPreferencesManager.clear()
+                SharedPreferencesManager.removeSecureToken()
                 onSuccess()
             } else {
                 error?.let {
@@ -116,9 +119,16 @@ class AppViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (message: String) -> Unit
     ) {
-        userRepository.register(login, password, customer) { client, error ->
+        NetworkClient.userRepository.register(
+            login,
+            password,
+            customer
+        ) { client, error, longTimeToken ->
             if (client != null) {
                 SharedPreferencesManager.saveUser(client)
+                longTimeToken?.let {
+                    SharedPreferencesManager.saveSecureToken(it)
+                }
                 onSuccess()
             } else {
                 error?.let {
@@ -157,7 +167,7 @@ class AppViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (error: String) -> Unit
     ) {
-        userRepository.editCustomer(
+        NetworkClient.userRepository.editCustomer(
             id = id,
             login = login,
             password = password,
@@ -193,7 +203,7 @@ class AppViewModel : ViewModel() {
         onSuccess: () -> Unit,
         onFailure: (message: String) -> Unit
     ) {
-        userRepository.checkClientToken(token) { customer, error ->
+        NetworkClient.userRepository.checkClientToken(token) { customer, error ->
             if (customer != null) {
                 SharedPreferencesManager.saveUser(customer)
                 onSuccess()
@@ -214,19 +224,28 @@ class AppViewModel : ViewModel() {
      * @param onFailure Callback function to be executed with an error message if the reminder fails.
      */
     fun remindPassword(email: String, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
-        userRepository.remindPassword(email, onSuccess = onSuccess, onFailure = { error ->
-            error?.let {
-                onFailure(error)
-            }
-            Log.e("AuthViewModel", error ?: "Unknown error")
-        })
+        NetworkClient.userRepository.remindPassword(
+            email,
+            onSuccess = onSuccess,
+            onFailure = { error ->
+                error?.let {
+                    onFailure(error)
+                }
+                Log.e("AuthViewModel", error ?: "Unknown error")
+            })
     }
 
-    fun checkIfConnected(onSuccess: () -> Unit,onFailure: () -> Unit){
-        userRepository.isConnected(onSuccess = onSuccess, onFailure = onFailure)
+    /**
+     *  empty call checking if connection is available
+     *
+     *  @param onSuccess Callback executed if connection available
+     *  @param onFailure Callback executed if connection unavailable
+     */
+    fun checkIfConnected(onSuccess: () -> Unit, onFailure: () -> Unit) {
+        NetworkClient.userRepository.isConnected(onSuccess = onSuccess, onFailure = onFailure)
     }
 
-    inner class ObserveIfConnectionAvaliable(
+    inner class ObserveIfConnectionAvailable(
         private val lifecycleOwner: LifecycleOwner,
         private val invokeIfConnected: () -> Unit,
         private val invokeIfDisconnected: () -> Unit
@@ -246,7 +265,6 @@ class AppViewModel : ViewModel() {
                                 delay_time = 5_000L
                                 invokeIfDisconnected()
                             })
-                    println("CHECKING CONNECTION")
                     }
                     delay(delay_time)
                 }

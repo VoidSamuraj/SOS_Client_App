@@ -5,7 +5,12 @@ import com.pollub.awpfoc.data.ApiService
 import com.pollub.awpfoc.data.models.Credentials
 import com.pollub.awpfoc.data.models.Customer
 import com.pollub.awpfoc.data.models.CustomerInfo
+import com.pollub.awpfoc.data.models.JWTToken
+import com.pollub.awpfoc.data.models.TokenResponse
 import com.pollub.awpfoc.network.NetworkClient
+import com.pollub.awpfoc.utils.TokenManager
+import com.pollub.awpfoc.utils.TokenManager.isRefreshTokenExpired
+import kotlinx.coroutines.runBlocking
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,6 +21,26 @@ import retrofit2.Response
 class UserRepository {
     // Instance of ApiService for making network requests
     private val apiService: ApiService = NetworkClient.instance
+
+    suspend fun refreshToken(refreshToken: String): TokenResponse? {
+        val response = apiService.refreshToken(refreshToken = refreshToken)
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            Log.e("UserRepository.isLoginUsed", "" + response.errorBody()?.string())
+            null
+        }
+    }
+
+    suspend fun refreshRefreshToken(refreshToken: String): TokenResponse? {
+        val response = apiService.refreshRefreshToken(refreshToken = refreshToken)
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            Log.e("UserRepository.isLoginUsed", "" + response.errorBody()?.string())
+            null
+        }
+    }
 
     /**
      * Checks if a given login is already used in the system.
@@ -47,7 +72,12 @@ class UserRepository {
         })
     }
 
-    fun isConnected(onSuccess: () -> Unit, onFailure: () -> Unit){
+    /**
+     *  empty call checking if connection is available
+     *  @param onSuccess Callback executed if connection available
+     *  @param onFailure Callback executed if connection unavailable
+     */
+    fun isConnected(onSuccess: () -> Unit, onFailure: () -> Unit) {
         apiService.isConnectionAvailable().enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
@@ -56,6 +86,7 @@ class UserRepository {
                     onFailure()
                 }
             }
+
             override fun onFailure(call: Call<Void?>, t: Throwable) {
                 onFailure()
             }
@@ -67,39 +98,44 @@ class UserRepository {
      *
      * @param login The user's login.
      * @param password The user's password.
-     * @param callback Callback function that receives a Customer object on success, or an error message on failure.
+     * @param callback Callback function that receives a Customer object and LongTimeToken on success, or an error message on failure.
      */
-    fun login(login: String, password: String, callback: (Customer?, String?) -> Unit) {
+    fun login(login: String, password: String, callback: (Customer?, String?, String?) -> Unit) {
         val credentials = Credentials(login, password)
-        apiService.loginClient(credentials).enqueue(object : Callback<Pair<String, CustomerInfo>> {
-            override fun onResponse(
-                call: Call<Pair<String, CustomerInfo>>,
-                response: Response<Pair<String, CustomerInfo>>
-            ) {
-                if (response.isSuccessful) {
-                    response.body()?.let { customer ->
-                        if (customer.second.token != null) {
-                            callback(
-                                Customer.fromCustomerInfo(
-                                    customerInfo = customer.second,
-                                    login = customer.first,
-                                    password = ""
-                                ), null
-                            )
-                        } else {
-                            callback(null, "Error: No token")
+        apiService.loginClient(credentials)
+            .enqueue(object : Callback<Triple<String, CustomerInfo, JWTToken>> {
+                override fun onResponse(
+                    call: Call<Triple<String, CustomerInfo, JWTToken>>,
+                    response: Response<Triple<String, CustomerInfo, JWTToken>>
+                ) {
+                    if (response.isSuccessful) {
+                        response.body()?.let { customer ->
+                            if (customer.second.token != null) {
+                                callback(
+                                    Customer.fromCustomerInfo(
+                                        customerInfo = customer.second,
+                                        login = customer.first,
+                                        password = ""
+                                    ), null,
+                                    customer.third.token
+                                )
+                            } else {
+                                callback(null, "Error: No token", null)
+                            }
                         }
+                    } else {
+                        callback(null, response.errorBody()?.string(), null)
+                        Log.e("UserRepository.login", "" + response.errorBody()?.string())
                     }
-                } else {
-                    callback(null, response.errorBody()?.string())
-                    Log.e("UserRepository.login", "" + response.errorBody()?.string())
                 }
-            }
 
-            override fun onFailure(call: Call<Pair<String, CustomerInfo>>, t: Throwable) {
-                Log.e("UserRepository.login", t.message.toString())
-            }
-        })
+                override fun onFailure(
+                    call: Call<Triple<String, CustomerInfo, JWTToken>>,
+                    t: Throwable
+                ) {
+                    Log.e("UserRepository.login", t.message.toString())
+                }
+            })
     }
 
     /**
@@ -108,13 +144,13 @@ class UserRepository {
      * @param login The login to register.
      * @param password The password for the account.
      * @param client CustomerInfo containing additional user details.
-     * @param callback Callback function that receives a Customer object on success, or an error message on failure.
+     * @param callback Callback function that receives a Customer object and LongTimeToken on success, or an error message on failure.
      */
     fun register(
         login: String,
         password: String,
         client: CustomerInfo,
-        callback: (Customer?, String?) -> Unit
+        callback: (Customer?, String?, String?) -> Unit
     ) {
 
         apiService.registerClient(
@@ -125,10 +161,10 @@ class UserRepository {
             email = client.email,
             phone = client.phone,
             pesel = client.pesel
-        ).enqueue(object : Callback<Pair<String, CustomerInfo>> {
+        ).enqueue(object : Callback<Triple<String, CustomerInfo, JWTToken>> {
             override fun onResponse(
-                call: Call<Pair<String, CustomerInfo>>,
-                response: Response<Pair<String, CustomerInfo>>
+                call: Call<Triple<String, CustomerInfo, JWTToken>>,
+                response: Response<Triple<String, CustomerInfo, JWTToken>>
             ) {
                 if (response.isSuccessful) {
                     response.body()?.let { customer ->
@@ -138,19 +174,23 @@ class UserRepository {
                                     customerInfo = customer.second,
                                     login = customer.first,
                                     password = ""
-                                ), null
+                                ), null,
+                                customer.third.token
                             )
                         } else {
-                            callback(null, "Error: No token")
+                            callback(null, "Error: No token", null)
                         }
                     }
                 } else {
-                    callback(null, response.errorBody()?.string())
+                    callback(null, response.errorBody()?.string(), null)
                     Log.e("UserRepository.register", "" + response.errorBody()?.string())
                 }
             }
 
-            override fun onFailure(call: Call<Pair<String, CustomerInfo>>, t: Throwable) {
+            override fun onFailure(
+                call: Call<Triple<String, CustomerInfo, JWTToken>>,
+                t: Throwable
+            ) {
                 Log.e("UserRepository.register", t.message.toString())
             }
         })
@@ -204,6 +244,21 @@ class UserRepository {
         pesel: String?,
         callback: (Customer?, String?) -> Unit
     ) {
+        //check if RefreshToken is valid
+        if (isRefreshTokenExpired()) {
+            callback(null, "Error: Need authorization")
+            return
+        }
+        //refresh if Refresh AccessToken if needed
+        if (runBlocking {
+                if (TokenManager.refreshTokenIfNeeded() == null) {
+                    callback(null, "Error: Need authorization")
+                    return@runBlocking true
+                }
+                return@runBlocking false
+            })
+            return
+
         apiService.editClient(
             id = id,
             login = login,

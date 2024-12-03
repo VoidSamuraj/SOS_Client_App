@@ -43,16 +43,18 @@ import com.pollub.awpfoc.ui.login.RegistrationScreen
 import com.pollub.awpfoc.ui.login.RegistrationScreenPersonalInformation
 import com.pollub.awpfoc.ui.login.RemindPasswordScreen
 import com.pollub.awpfoc.utils.CustomSnackBar
+import com.pollub.awpfoc.utils.TokenManager
 import com.pollub.awpfoc.viewmodel.AppViewModel
 import com.pollub.awpfoc.viewmodel.RegisterScreenViewModel
+import kotlinx.coroutines.runBlocking
 
 /**
-* Composable function that sets up the main user interface.
-*
-* @param mainActivity The MainActivity instance for context and permission handling.
-* @param viewModel The AppViewModel to interact with data layer.
-* @param requestCallPermissionLauncher Launcher for requesting CALL_PHONE permission.
-*/
+ * Composable function that sets up the main user interface.
+ *
+ * @param mainActivity The MainActivity instance for context and permission handling.
+ * @param viewModel The AppViewModel to interact with data layer.
+ * @param requestCallPermissionLauncher Launcher for requesting CALL_PHONE permission.
+ */
 @Composable
 fun AppUI(
     mainActivity: MainActivity,
@@ -106,14 +108,14 @@ fun AppUI(
                 ) { innerPadding ->
                     MainScreen(
                         modifier = Modifier.padding(innerPadding),
-                        viewModel= viewModel,
+                        viewModel = viewModel,
                         phoneNumber = supportPhoneNumber,
                         requestCallPermissionLauncher = requestCallPermissionLauncher,
-                        onCallSOS = {onSuccess ->
+                        onCallSOS = { onSuccess ->
                             NetworkClient.WebSocketManager.executeOnStart { onSuccess() }
                             mainActivity.startService(locationServiceIntent)
                         },
-                        onCancelSOS = { onSuccess->
+                        onCancelSOS = { onSuccess ->
                             NetworkClient.WebSocketManager.executeOnClose { onSuccess() }
                             NetworkClient.WebSocketManager.setCloseCode(4000)
                             mainActivity.stopService(locationServiceIntent)
@@ -132,8 +134,35 @@ fun AppUI(
                                 }
                             },
                             onFailure = { message ->
-                                snackBarMessage.value = message
-                                isSnackBarVisible.value = true
+                                val securedToken = SharedPreferencesManager.getSecureToken()
+                                if (securedToken != null) {
+                                    viewModel.checkClientToken(securedToken,
+                                        onSuccess = {
+                                            runBlocking {
+                                                if (!TokenManager.isRefreshTokenExpired()) {
+                                                    TokenManager.refreshTokenIfNeeded()
+                                                    navController.navigate(NavRoutes.MainScreen.route) {
+                                                        popUpTo(NavRoutes.LoginScreen.route) {
+                                                            inclusive = true
+                                                        }
+                                                    }
+                                                } else {
+                                                    snackBarMessage.value = "Sesja wygasła"
+                                                    isSnackBarVisible.value = true
+                                                }
+
+                                            }
+
+                                        },
+                                        onFailure = { message ->
+                                            snackBarMessage.value = message
+                                            isSnackBarVisible.value = true
+                                        }
+                                    )
+                                } else {
+                                    snackBarMessage.value = "Sesja wygasła"
+                                    isSnackBarVisible.value = true
+                                }
                             })
                     }
                 }
