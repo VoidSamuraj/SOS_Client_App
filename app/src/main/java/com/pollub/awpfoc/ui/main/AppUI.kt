@@ -96,9 +96,12 @@ fun AppUI(
                                 navController.navigate(NavRoutes.EditUserDataScreen.route)
                             },
                             onLogout = {
-                                viewModel.logout(onSuccess = {
-                                    navController.navigate(NavRoutes.LoginScreen.route)
-                                },
+                                viewModel.logout(
+                                    onSuccess = {
+                                        NetworkClient.WebSocketManager.setCloseCode(4000)
+                                        mainActivity.stopService(locationServiceIntent)
+                                        navController.navigate(NavRoutes.LoginScreen.route)
+                                    },
                                     onFailure = { message ->
                                         snackBarMessage.value = message
                                         isSnackBarVisible.value = true
@@ -139,29 +142,19 @@ fun AppUI(
                                     viewModel.checkClientToken(securedToken,
                                         onSuccess = {
                                             runBlocking {
-                                                if (!TokenManager.isRefreshTokenExpired()) {
-                                                    TokenManager.refreshTokenIfNeeded()
-                                                    navController.navigate(NavRoutes.MainScreen.route) {
-                                                        popUpTo(NavRoutes.LoginScreen.route) {
-                                                            inclusive = true
-                                                        }
+                                                TokenManager.refreshTokenIfNeeded()
+                                                navController.navigate(NavRoutes.MainScreen.route) {
+                                                    popUpTo(NavRoutes.LoginScreen.route) {
+                                                        inclusive = true
                                                     }
-                                                } else {
-                                                    snackBarMessage.value = "Sesja wygasła"
-                                                    isSnackBarVisible.value = true
                                                 }
-
                                             }
-
                                         },
-                                        onFailure = { message ->
-                                            snackBarMessage.value = message
+                                        onFailure = {
+                                            snackBarMessage.value = "Sesja wygasła"
                                             isSnackBarVisible.value = true
                                         }
                                     )
-                                } else {
-                                    snackBarMessage.value = "Sesja wygasła"
-                                    isSnackBarVisible.value = true
                                 }
                             })
                     }
