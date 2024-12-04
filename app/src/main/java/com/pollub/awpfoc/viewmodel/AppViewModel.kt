@@ -24,6 +24,15 @@ import kotlinx.coroutines.launch
  */
 class AppViewModel : ViewModel() {
 
+    companion object{
+        enum class ReportState{
+            CONFIRMED,
+            WAITING,
+            NONE
+        }
+    }
+    val reportState = mutableStateOf(ReportState.NONE)
+
     val isSystemConnected = mutableStateOf(false)
     val isSmartWatchConnected = mutableStateOf(false)
     val isSosActive = mutableStateOf(false)
@@ -81,6 +90,7 @@ class AppViewModel : ViewModel() {
             }
         }
     }
+
 
     /**
      * Logs out the currently logged-in user.

@@ -34,14 +34,17 @@ import com.pollub.awpfoc.utils.TokenManager.isRefreshTokenExpired
 class LocationService : Service() {
 
     private var locationCallback: LocationCallback? = null
+    private var lastLocation: Location? = null
 
-    companion object{
-        private const val UPDATE_LOCATION_INTERVAL= 10_000L
-        private const val CHECK_TOKEN_INTERVAL_COUNT = TokenManager.TOKEN_EXPIRATION_THRESHOLD*500/UPDATE_LOCATION_INTERVAL
+    companion object {
+        private const val UPDATE_LOCATION_INTERVAL = 10_000L
+        private const val CHECK_TOKEN_INTERVAL_COUNT =
+            TokenManager.TOKEN_EXPIRATION_THRESHOLD * 500 / UPDATE_LOCATION_INTERVAL
+        private const val MIN_DISTANCE_THRESHOLD_METERS = 5
     }
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var tokenCheckCounter=0
+    private var tokenCheckCounter = 0
 
     //associate coroutine with scope to easy cancel coroutine
     private val job = Job()
@@ -85,6 +88,7 @@ class LocationService : Service() {
             object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     val location = locationResult.lastLocation
+                    lastLocation=location
                     if (location != null) {
                         val locationData = """
                         {"callReport":true, "userId":${customerId},"latitude": ${location.latitude}, "longitude": ${location.longitude}}
@@ -143,32 +147,27 @@ class LocationService : Service() {
             .setMinUpdateIntervalMillis(10_000L)
             .setMaxUpdateDelayMillis(10_000L)
             .build()
-        locationCallback=object : LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
 
-                println("refresh $tokenCheckCounter / $CHECK_TOKEN_INTERVAL_COUNT ")
-                if(tokenCheckCounter>=CHECK_TOKEN_INTERVAL_COUNT){
-                    tokenCheckCounter=0
-                    if (isRefreshTokenExpired()){
+                if (tokenCheckCounter >= CHECK_TOKEN_INTERVAL_COUNT) {
+                    tokenCheckCounter = 0
+                    if (isRefreshTokenExpired()) {
                         WebSocketManager.disconnect()
                         return
                     }
-                    runBlocking{TokenManager.refreshTokenIfNeeded()}
-                    /*else if (runBlocking{TokenManager.refreshTokenIfNeeded()!=null}) {
-                        println("refreshexpired2")
-                        WebSocketManager.disconnect()
-                        WebSocketManager.connect(BASE_WEBSOCKET_URL)
-                        sendStartupInfo()
-                        return
-                    }*/
-                }else
+                    runBlocking { TokenManager.refreshTokenIfNeeded() }
+                } else
                     ++tokenCheckCounter
 
                 for (location in locationResult.locations) {
-                    if (WebSocketManager.isConnecting.value)
-                        sendReconnectMessage(location)
-                    else
-                        sendLocationToServer(location)
+                    if (lastLocation == null || location.distanceTo(lastLocation!!) >= MIN_DISTANCE_THRESHOLD_METERS) {
+                        lastLocation = location
+                        if (WebSocketManager.isConnecting.value)
+                            sendReconnectMessage(location)
+                        else
+                            sendLocationToServer(location)
+                    }
                 }
             }
         }

@@ -33,12 +33,14 @@ import com.pollub.awpfoc.utils.drawShadow
  *
  * The button animates its background color and shadow color when the SOS is active.
  *
+ * @param isButtonActive Boolean indicating if the button are clickable.
  * @param isSosActive MutableState<Boolean> that indicates whether the SOS feature is active.
  * @param isSystemConnecting MutableState<Boolean> that indicates whether the SOS feature is still connecting/reconnecting.
  * @param onButtonClick Lambda function to be executed when the button is clicked.
  */
 @Composable
 fun SOSButton(
+    isButtonActive: MutableState<Boolean>,
     isSosActive: MutableState<Boolean>,
     isSystemConnecting: MutableState<Boolean>,
     onButtonClick: () -> Unit
@@ -96,7 +98,8 @@ fun SOSButton(
                 if (isSosActive.value)
                     drawShadow(20.dp, 30.dp, shadowColor.value)
                 drawContent()
-            }
+            },
+        enabled=isButtonActive.value
     ) {
         Text(
             text = if (isSosActive.value) "SOS AKTYWNY" else "SOS",
@@ -112,8 +115,9 @@ fun SOSButton(
 @Composable
 fun SOSButtonPreview() {
     AwpfocTheme(dynamicColor = false) {
+        val isButtonActive = remember { mutableStateOf(true) }
         val isSosActive = remember { mutableStateOf(true) }
         val isReconnecting = remember { mutableStateOf(true) }
-        SOSButton(isSosActive, isReconnecting, {})
+        SOSButton(isButtonActive,isSosActive, isReconnecting, {})
     }
 }

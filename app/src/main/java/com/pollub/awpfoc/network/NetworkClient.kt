@@ -30,7 +30,7 @@ import javax.net.ssl.X509TrustManager
  */
 object NetworkClient {
 
-    val userRepository: UserRepository by lazy{
+    val userRepository: UserRepository by lazy {
         UserRepository()
     }
 
@@ -144,6 +144,7 @@ object NetworkClient {
 
                     override fun onMessage(webSocket: WebSocket, text: String) {
                         val jsonObject = JsonParser.parseString(text).asJsonObject
+                        //confirmed
                         if (jsonObject.has("reportId")) {
                             lastReportId = jsonObject.get("reportId").asInt
                             executeOnStart?.invoke()
@@ -155,8 +156,8 @@ object NetworkClient {
                                 "finished" -> {
                                     lastReportId = -1
                                     viewModel?.isSosActive?.value = false
-                                    //todo change to https request
-                                    //viewModel?.isSystemConnected?.value=false
+                                    viewModel?.reportState?.value =
+                                        AppViewModel.Companion.ReportState.NONE
                                     onReportFinish()
                                 }
 
@@ -164,6 +165,16 @@ object NetworkClient {
                                     setIsConnected(true)
                                     isConnecting.value = false
                                     executeOnStart?.invoke()
+                                }
+
+                                "confirmed" -> {
+                                    viewModel?.reportState?.value =
+                                        AppViewModel.Companion.ReportState.CONFIRMED
+                                }
+
+                                "waiting" -> {
+                                    viewModel?.reportState?.value =
+                                        AppViewModel.Companion.ReportState.WAITING
                                 }
                             }
                         }

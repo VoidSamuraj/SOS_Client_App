@@ -109,10 +109,12 @@ fun AppUI(
                             })
                     }
                 ) { innerPadding ->
+                    val userExpDate = SharedPreferencesManager.getUser().protection_expiration_date
                     MainScreen(
                         modifier = Modifier.padding(innerPadding),
                         viewModel = viewModel,
                         phoneNumber = supportPhoneNumber,
+                        protectionExpirationDate= userExpDate,
                         requestCallPermissionLauncher = requestCallPermissionLauncher,
                         onCallSOS = { onSuccess ->
                             NetworkClient.WebSocketManager.executeOnStart { onSuccess() }

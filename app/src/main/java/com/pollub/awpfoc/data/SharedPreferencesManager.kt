@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.pollub.awpfoc.data.models.Customer
+
 /**
  * Singleton object to manage user session data using SharedPreferences.
  */
@@ -18,6 +19,7 @@ object SharedPreferencesManager {
     private const val KEY_EMAIL = "email"
     private const val KEY_PESEL = "pesel"
     private const val KEY_TOKEN = "token"
+    private const val KEY_PROTECTION_EXPIRATION_DATE = "protection_expiration_date"
     private const val SECURED_JWT = "secure_jwt"
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -45,6 +47,8 @@ object SharedPreferencesManager {
      * @param customerInfo The Customer object containing user details to save.
      */
     fun saveUser(customerInfo: Customer) {
+        println("NOWEDANE")
+        println(customerInfo)
         sharedPreferences.edit()
             .putString(KEY_ID, customerInfo.id.toString())
             .putString(LOGIN_ID, customerInfo.login.toString())
@@ -53,6 +57,7 @@ object SharedPreferencesManager {
             .putString(KEY_PHONE, customerInfo.phone)
             .putString(KEY_EMAIL, customerInfo.email)
             .putString(KEY_PESEL, customerInfo.pesel)
+            .putString(KEY_PROTECTION_EXPIRATION_DATE, customerInfo.protection_expiration_date)
             .putString(KEY_TOKEN, customerInfo.token)
             .apply()
     }
@@ -62,7 +67,7 @@ object SharedPreferencesManager {
      *
      * @param token The Customer access token.
      */
-    fun saveToken(token: String){
+    fun saveToken(token: String) {
         sharedPreferences.edit()
             .putString(KEY_TOKEN, token)
             .apply()
@@ -94,6 +99,7 @@ object SharedPreferencesManager {
     fun removeSecureToken() {
         encryptedPreferences.edit().clear().apply()
     }
+
     /**
      * Retrieves the stored user information as a Customer object.
      *
@@ -111,7 +117,7 @@ object SharedPreferencesManager {
                 pesel = it.getString(KEY_PESEL, "").toString(),
                 email = it.getString(KEY_EMAIL, "").toString(),
                 account_deleted = false,
-                protection_expiration_date = null,
+                protection_expiration_date = it.getString(KEY_PROTECTION_EXPIRATION_DATE, null),
                 token = it.getString(KEY_TOKEN, "")
             )
         }
