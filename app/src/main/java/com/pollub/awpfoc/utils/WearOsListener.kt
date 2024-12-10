@@ -53,7 +53,9 @@ class WearOsListener : WearableListenerService() {
 
                         sendToWear(
                             "/token_status",
-                            "${if (isValid) "valid" else "invalid"} ${if (isActive) " " else " protection_expired"}"
+                            (if (isValid) "valid" else "invalid") +
+                                    (if (isActive) "" else " protection_expired") +
+                                    (if (viewModelInstance != null) " status_${viewModelInstance!!.reportState.value}" else "")
                         )
                     } catch (e: Exception) {
                         Log.e("WearApp", "Error handling message", e)
@@ -70,6 +72,7 @@ class WearOsListener : WearableListenerService() {
                     if (isActive) {
                         NetworkClient.WebSocketManager.executeOnStart {
                             viewModelInstance?.isSosActive?.value = true
+                            viewModelInstance?.reportState?.value = AppViewModel.Companion.ReportState.WAITING
                             CoroutineScope(Dispatchers.IO).launch {
                                 sendToWear("/start_sos", "started")
                             }

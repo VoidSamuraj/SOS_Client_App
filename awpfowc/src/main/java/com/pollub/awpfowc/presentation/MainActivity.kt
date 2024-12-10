@@ -136,6 +136,7 @@ fun WearApp(viewModel: ViewModel) {
                 composable(NavRoutes.WaitingScreen.route) {
                     SOSScreen(
                         isScreenRound = isScreenRound,
+                        viewModel = viewModel,
                         onDismiss = {
                             CoroutineScope(Dispatchers.IO).launch {
                                 viewModel.sendSOSRequest(start = false,

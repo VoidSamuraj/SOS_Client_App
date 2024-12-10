@@ -144,6 +144,7 @@ fun MainScreen(
             onButtonClick = {
                 onCallSOS() {
                     viewModel.isSosActive.value = true
+                    viewModel.reportState.value = AppViewModel.Companion.ReportState.WAITING
                 }
             })
 

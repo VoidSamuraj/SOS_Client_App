@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
         SharedPreferencesManager.init(this)
         viewModel = ViewModelProvider(this)[AppViewModel::class.java]
         NetworkClient.WebSocketManager.setViewModel(viewModel)
+        NetworkClient.WebSocketManager.setContext(this)
         WearOsListener.viewModelInstance = viewModel
 
         lifecycle.addObserver(
@@ -133,6 +134,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        NetworkClient.WebSocketManager.deleteContext()
         handler.removeCallbacks(refreshTask)
     }
 }

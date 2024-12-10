@@ -31,13 +31,14 @@ import kotlin.coroutines.suspendCoroutine
  */
 class AppViewModel : ViewModel() {
 
-    companion object{
-        enum class ReportState{
+    companion object {
+        enum class ReportState {
             CONFIRMED,
             WAITING,
             NONE
         }
     }
+
     val reportState = mutableStateOf(ReportState.NONE)
 
     val isSystemConnected = mutableStateOf(false)
@@ -287,9 +288,9 @@ class AppViewModel : ViewModel() {
                                 invokeIfDisconnected()
                             })
                     }
-                    if(isWearableConnected(context)){
+                    if (isWearableConnected(context)) {
                         invokeIfWatchConnected()
-                    }else{
+                    } else {
                         invokeIfWatchDisconnected()
                     }
                     delay(delay_time)
@@ -313,43 +314,53 @@ class AppViewModel : ViewModel() {
     }
 
     suspend fun sendStartSOSToWear(context: Context) {
-        val nodeId = getConnectedNodeId(context)
-        if (nodeId != null)
-            Wearable.getMessageClient(context)
-                .sendMessage(nodeId, "/start_sos", "started".toByteArray())
-                .addOnSuccessListener {
-                    Log.d("WearApp", "start sent to Wear OS")
-                }
-                .addOnFailureListener {
-                    Log.e("WearApp", "Failed to send start status to wear Os", it)
-                }
-        else
-            Log.e("WearApp", "Failed to send start status to Wear OS, no node")
-
+        sentMessageToWear(
+            context = context,
+            path = "/start_sos",
+            message = "started",
+            errorMessage = "Failed sendStartSOSToWear, no node"
+        )
     }
 
     suspend fun sendStopSOSToWear(context: Context) {
-        val nodeId = getConnectedNodeId(context)
-        if (nodeId != null)
-            Wearable.getMessageClient(context)
-                .sendMessage(nodeId, "/end_sos", "stopped".toByteArray())
-                .addOnSuccessListener {
-                    Log.d("WearApp", "stop status sent to Wear OS")
-                }
-                .addOnFailureListener {
-                    Log.e("WearApp", "Failed to send stop status to wear Os", it)
-                }
-        else
-            Log.e("WearApp", "Failed to send stop status to Wear OS, no node")
+        sentMessageToWear(
+            context = context,
+            path = "/end_sos",
+            message = "stopped",
+            errorMessage = "Failed sendStopSOSToWear, no node"
+        )
     }
-    suspend fun sendLoggedInToWear(context: Context, isLoggedIn:Boolean) {
-        val message = if (isLoggedIn) "valid" else "invalid"
+
+    suspend fun sendLoggedInToWear(context: Context, isLoggedIn: Boolean) {
+        sentMessageToWear(
+            context = context,
+            path = "/token_status",
+            message = if (isLoggedIn) "valid" else "invalid",
+            errorMessage = "Failed sendLoggedInToWear, no node"
+        )
+    }
+
+    suspend fun sendSOSStatusToWear(context: Context, status: String) {
+        sentMessageToWear(
+            context = context,
+            path = "/sos_status",
+            message = status,
+            errorMessage = "Failed sendSOSStatusToWear, no node"
+        )
+    }
+
+    suspend fun sentMessageToWear(
+        context: Context,
+        path: String,
+        message: String,
+        errorMessage: String
+    ) {
         val nodeId = getConnectedNodeId(context)
         if (nodeId != null)
             Wearable.getMessageClient(context)
-                .sendMessage(nodeId, "/token_status", message.toByteArray())
+                .sendMessage(nodeId, path, message.toByteArray())
         else
-            Log.e("WearApp", "Failed to send stop status to Wear OS, no node")
+            Log.e("WearApp", errorMessage)
     }
 
     private suspend fun getConnectedNodeId(context: Context): String? {

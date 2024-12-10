@@ -1,5 +1,7 @@
 package com.pollub.awpfoc.network
 
+import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.JsonParser
 import com.pollub.awpfoc.BASE_URL
@@ -77,8 +79,11 @@ object NetworkClient {
             .create(ApiService::class.java)
     }
 
+    @SuppressLint("StaticFieldLeak")
     object WebSocketManager {
         private var viewModel: AppViewModel? = null
+
+        private var context: Context?=null
 
         val isConnecting = mutableStateOf(false)
 
@@ -86,6 +91,12 @@ object NetworkClient {
             viewModel = vm
         }
 
+        fun setContext(context: Context) {
+            this.context = context
+        }
+        fun deleteContext(){
+            this.context = null
+        }
         var onReportFinish: () -> Unit = {}
 
         fun setOnReportFinished(onFinish: () -> Unit) {
@@ -159,6 +170,11 @@ object NetworkClient {
                                     viewModel?.reportState?.value =
                                         AppViewModel.Companion.ReportState.NONE
                                     onReportFinish()
+                                    context?.let {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            viewModel?.sendSOSStatusToWear(it,"finished")
+                                        }
+                                    }
                                 }
 
                                 "reconnected" -> {
@@ -170,11 +186,21 @@ object NetworkClient {
                                 "confirmed" -> {
                                     viewModel?.reportState?.value =
                                         AppViewModel.Companion.ReportState.CONFIRMED
+                                    context?.let {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            viewModel?.sendSOSStatusToWear(it,"confirmed")
+                                        }
+                                    }
                                 }
 
                                 "waiting" -> {
                                     viewModel?.reportState?.value =
                                         AppViewModel.Companion.ReportState.WAITING
+                                    context?.let {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            viewModel?.sendSOSStatusToWear(it,"waiting")
+                                        }
+                                    }
                                 }
                             }
                         }

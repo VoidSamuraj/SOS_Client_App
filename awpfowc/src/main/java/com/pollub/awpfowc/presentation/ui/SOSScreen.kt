@@ -1,5 +1,6 @@
 package com.pollub.awpfowc.presentation.ui
 
+import android.app.Application
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -23,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,10 +32,11 @@ import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.Text
 import androidx.wear.tooling.preview.devices.WearDevices
 import com.pollub.awpfowc.presentation.utils.innerShadow
+import com.pollub.awpfowc.presentation.viewmodel.ViewModel
 
 
 @Composable
-fun SOSScreen(isScreenRound: Boolean, onDismiss: () -> Unit) {
+fun SOSScreen(isScreenRound: Boolean, viewModel: ViewModel, onDismiss: () -> Unit) {
     val size = remember { Animatable(30f) }
     val isDialogVisible = remember { mutableStateOf(false) }
     val screenShape = if (isScreenRound) CircleShape else RectangleShape
@@ -84,19 +85,28 @@ fun SOSScreen(isScreenRound: Boolean, onDismiss: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(if (isScreenRound) 1f else 0.5f))
-            Box(
+
+
+          Box(
                 modifier = Modifier
                     .weight(1.8f)
                     .padding(horizontal = 5.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Patrol jest w drodze",
-                    color = Color(51, 204, 51),
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center,
-                )
-            }
+
+              PatrolStatus(
+                  Modifier,
+                  80f,
+                  viewModel.reportState.value
+              )
+              /*
+               Text(
+                   text = "Patrol jest w drodze",
+                   color = Color(51, 204, 51),
+                   fontSize = 18.sp,
+                   textAlign = TextAlign.Center,
+               )*/
+           }
 
             Button(
                 modifier = Modifier
@@ -132,6 +142,7 @@ fun SOSScreen(isScreenRound: Boolean, onDismiss: () -> Unit) {
 @Preview(device = WearDevices.SQUARE, showSystemUi = true)
 @Composable
 fun SOSPreview() {
+    val viewmodel: ViewModel =  ViewModel(Application())
     val isScreenRound = LocalContext.current.resources.configuration.isScreenRound
-    SOSScreen(isScreenRound, {})
+    SOSScreen(isScreenRound, viewmodel,{})
 }

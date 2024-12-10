@@ -1,6 +1,7 @@
 package com.pollub.awpfowc.presentation.viewmodel
 
 import android.app.Application
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import com.google.android.gms.wearable.Wearable
 import kotlin.coroutines.resume
@@ -11,6 +12,16 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
 
     private val context = getApplication<Application>()
     var hasProtectExpired: Boolean = false
+
+    companion object {
+        enum class ReportState {
+            CONFIRMED,
+            WAITING,
+            NONE
+        }
+    }
+
+    val reportState = mutableStateOf(ReportState.NONE)
 
     suspend fun checkToken(callOnNoConnection: () -> Unit, callOnConnection: () -> Unit) {
         val nodeId = getConnectedNodeId()
@@ -50,43 +61,75 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
         onFailure: () -> Unit
     ) {
         Wearable.getMessageClient(context).addListener { messageEvent ->
-            if (messageEvent.path == "/token_status") {
-                val status = String(messageEvent.data)
-                if (status.contains("invalid"))
-                    onTokenExpire()
-                else {
-                    if (status.contains("protection_expired")) {
-                        hasProtectExpired = true
-                        onProtectExpiration()
-                    } else
-                        onTokenActive()
+            val status = String(messageEvent.data)
+            when (messageEvent.path) {
+                "/token_status" -> {
+                    if (status.contains("invalid"))
+                        onTokenExpire()
+                    else {
+                        if (status.contains("protection_expired")) {
+                            hasProtectExpired = true
+                            onProtectExpiration()
+                        } else {
+                            if (status.contains("status_NONE"))
+                                reportState.value = ReportState.NONE
+                            else if (status.contains("status_WAITING")) {
+                                reportState.value = ReportState.WAITING
+                                onStartedSOS()
+                            } else if (status.contains("status_CONFIRMED")) {
+                                reportState.value = ReportState.CONFIRMED
+                                onStartedSOS()
+                            }
+                            onTokenActive()
+                        }
+                    }
+
                 }
 
-            } else if (messageEvent.path == "/start_sos") {
-                val status = String(messageEvent.data)
-                when (status) {
-                    "started" -> {
-                        onStartedSOS()
-                    }
+                "/start_sos" -> {
+                    when (status) {
+                        "started" -> {
+                            reportState.value = ReportState.WAITING
+                            onStartedSOS()
+                        }
 
-                    "protection_expired" -> {
-                        hasProtectExpired = true
-                        onProtectExpiration()
-                    }
+                        "protection_expired" -> {
+                            hasProtectExpired = true
+                            onProtectExpiration()
+                        }
 
-                    "no_logged_in" -> {
-                        onTokenExpire()
-                    }
+                        "no_logged_in" -> {
+                            onTokenExpire()
+                        }
 
-                    else ->
+                        else ->
+                            onFailure()
+                    }
+                }
+
+                "/end_sos" -> {
+                    if (status == "stopped")
+                        onStoppedSOS()
+                    else
                         onFailure()
                 }
-            } else if (messageEvent.path == "/end_sos") {
-                val status = String(messageEvent.data)
-                if (status == "stopped")
-                    onStoppedSOS()
-                else
-                    onFailure()
+
+                "/sos_status" -> {
+                    when (status) {
+                        "confirmed" -> {
+                            reportState.value = ReportState.CONFIRMED
+                        }
+
+                        "waiting" -> {
+                            reportState.value = ReportState.WAITING
+                        }
+
+                        "finished" -> {
+                            reportState.value = ReportState.NONE
+                            onStoppedSOS()
+                        }
+                    }
+                }
             }
         }
     }
