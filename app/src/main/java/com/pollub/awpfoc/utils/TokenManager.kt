@@ -5,6 +5,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.TokenResponse
 import com.pollub.awpfoc.network.NetworkClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Object to maintain calls for token refreshing, saving in SharedPreferences
@@ -126,41 +128,42 @@ object TokenManager {
      * @return selected tokens
      */
     private suspend fun refreshTokens(refreshToken: String, refreshBoth: Boolean): TokenResponse? {
+        return withContext(Dispatchers.IO){
+            try {
+                if (refreshBoth) {
+                    val tokenResponse = NetworkClient.userRepository.refreshRefreshToken(refreshToken)
+                    if (tokenResponse != null) {
+                        val (newAccessToken, newRefreshToken) = tokenResponse
+                        if (newAccessToken?.isNotEmpty() == true) {
+                            saveToken(
+                                newAccessToken,
+                                newRefreshToken
+                            )
+                            return@withContext TokenResponse(newAccessToken, newRefreshToken)
+                        }
+                    }
+                } else {
+                    val tokenResponse = NetworkClient.userRepository.refreshToken(refreshToken)
+                    if (tokenResponse != null) {
+                        val (newAccessToken, _) = tokenResponse
+                        if (newAccessToken?.isNotEmpty() == true) {
+                            saveToken(
+                                newAccessToken,
+                                refreshToken
+                            )
+                            return@withContext TokenResponse(
+                                newAccessToken,
+                                refreshToken
+                            )
+                        }
+                    }
+                }
 
-        try {
-            if (refreshBoth) {
-                val tokenResponse = NetworkClient.userRepository.refreshRefreshToken(refreshToken)
-                if (tokenResponse != null) {
-                    val (newAccessToken, newRefreshToken) = tokenResponse
-                    if (newAccessToken?.isNotEmpty() == true) {
-                        saveToken(
-                            newAccessToken,
-                            newRefreshToken
-                        )
-                        return TokenResponse(newAccessToken, newRefreshToken)
-                    }
-                }
-            } else {
-                val tokenResponse = NetworkClient.userRepository.refreshToken(refreshToken)
-                if (tokenResponse != null) {
-                    val (newAccessToken, _) = tokenResponse
-                    if (newAccessToken?.isNotEmpty() == true) {
-                        saveToken(
-                            newAccessToken,
-                            refreshToken
-                        )
-                        return TokenResponse(
-                            newAccessToken,
-                            refreshToken
-                        )
-                    }
-                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
-
-        } catch (e: Exception) {
-            e.printStackTrace()
+            return@withContext null
         }
-        return null
     }
 
 }

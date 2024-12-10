@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "awpfoc"
 include(":app")
+include(":awpfowc")

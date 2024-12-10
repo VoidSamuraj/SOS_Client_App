@@ -20,6 +20,7 @@ import com.pollub.awpfoc.ui.theme.AwpfocTheme
 import com.pollub.awpfoc.utils.CheckPermissions
 import com.pollub.awpfoc.utils.EnableEdgeToEdgeAndSetBarTheme
 import com.pollub.awpfoc.utils.TokenManager
+import com.pollub.awpfoc.utils.WearOsListener
 import com.pollub.awpfoc.utils.makePhoneCall
 import com.pollub.awpfoc.viewmodel.AppViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -59,15 +60,23 @@ class MainActivity : ComponentActivity() {
         SharedPreferencesManager.init(this)
         viewModel = ViewModelProvider(this)[AppViewModel::class.java]
         NetworkClient.WebSocketManager.setViewModel(viewModel)
+        WearOsListener.viewModelInstance = viewModel
 
         lifecycle.addObserver(
             viewModel.ObserveIfConnectionAvailable(
-                this,
+                context = this,
+                lifecycleOwner =  this,
                 invokeIfConnected = {
                     viewModel.isSystemConnected.value=true
                 },
                 invokeIfDisconnected = {
                     viewModel.isSystemConnected.value=false
+                },
+                invokeIfWatchConnected = {
+                    viewModel.isSmartWatchConnected.value=true
+                },
+                invokeIfWatchDisconnected = {
+                    viewModel.isSmartWatchConnected.value=false
                 })
         )
 

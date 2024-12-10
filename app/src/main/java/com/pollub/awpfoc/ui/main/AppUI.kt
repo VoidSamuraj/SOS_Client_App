@@ -46,6 +46,9 @@ import com.pollub.awpfoc.utils.CustomSnackBar
 import com.pollub.awpfoc.utils.TokenManager
 import com.pollub.awpfoc.viewmodel.AppViewModel
 import com.pollub.awpfoc.viewmodel.RegisterScreenViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -98,6 +101,9 @@ fun AppUI(
                             onLogout = {
                                 viewModel.logout(
                                     onSuccess = {
+                                        CoroutineScope(Dispatchers.IO).launch{
+                                            viewModel.sendLoggedInToWear(mainActivity,false)
+                                        }
                                         NetworkClient.WebSocketManager.setCloseCode(4000)
                                         mainActivity.stopService(locationServiceIntent)
                                         navController.navigate(NavRoutes.LoginScreen.route)
@@ -119,11 +125,17 @@ fun AppUI(
                         onCallSOS = { onSuccess ->
                             NetworkClient.WebSocketManager.executeOnStart { onSuccess() }
                             mainActivity.startService(locationServiceIntent)
+                            CoroutineScope(Dispatchers.IO).launch{
+                                viewModel.sendStartSOSToWear(mainActivity)
+                            }
                         },
                         onCancelSOS = { onSuccess ->
                             NetworkClient.WebSocketManager.executeOnClose { onSuccess() }
                             NetworkClient.WebSocketManager.setCloseCode(4000)
                             mainActivity.stopService(locationServiceIntent)
+                            CoroutineScope(Dispatchers.IO).launch{
+                                viewModel.sendStopSOSToWear(mainActivity)
+                            }
                         }
                     )
                 }
@@ -165,6 +177,9 @@ fun AppUI(
                     modifier = Modifier.padding(innerPadding),
                     onLoginPress = { login, password ->
                         viewModel.login(login = login, password, onSuccess = {
+                            CoroutineScope(Dispatchers.IO).launch{
+                                viewModel.sendLoggedInToWear(mainActivity,true)
+                            }
                             navController.navigate(NavRoutes.MainScreen.route) {
                                 popUpTo(navController.graph.startDestinationId) {
                                     inclusive = true
@@ -262,6 +277,9 @@ fun AppUI(
                                 onSuccess = {
                                     registerScreenViewModel.clearAllFields()
                                     isNavigatingToHome = true
+                                    CoroutineScope(Dispatchers.IO).launch{
+                                        viewModel.sendLoggedInToWear(mainActivity,true)
+                                    }
                                     navController.navigate(NavRoutes.MainScreen.route) {
                                         popUpTo(navController.graph.startDestinationId) {
                                             inclusive = true
@@ -310,6 +328,9 @@ fun AppUI(
                             },
                             onLogout = {
                                 viewModel.logout(onSuccess = {
+                                    CoroutineScope(Dispatchers.IO).launch{
+                                        viewModel.sendLoggedInToWear(mainActivity,false)
+                                    }
                                     navController.navigate(NavRoutes.LoginScreen.route)
                                 },
                                     onFailure = { message ->

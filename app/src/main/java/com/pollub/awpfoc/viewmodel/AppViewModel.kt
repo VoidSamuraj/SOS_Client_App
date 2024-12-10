@@ -1,11 +1,14 @@
 package com.pollub.awpfoc.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.wearable.Node
+import com.google.android.gms.wearable.Wearable
 import com.pollub.awpfoc.data.SharedPreferencesManager
 import com.pollub.awpfoc.data.models.CustomerInfo
 import com.pollub.awpfoc.network.NetworkClient
@@ -16,6 +19,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * ViewModel that manages user authentication and customer-related operations in the application.
@@ -256,9 +263,12 @@ class AppViewModel : ViewModel() {
     }
 
     inner class ObserveIfConnectionAvailable(
+        private val context: Context,
         private val lifecycleOwner: LifecycleOwner,
         private val invokeIfConnected: () -> Unit,
-        private val invokeIfDisconnected: () -> Unit
+        private val invokeIfDisconnected: () -> Unit,
+        private val invokeIfWatchConnected: () -> Unit,
+        private val invokeIfWatchDisconnected: () -> Unit
     ) : DefaultLifecycleObserver {
 
         private var job: Job? = null
@@ -266,6 +276,7 @@ class AppViewModel : ViewModel() {
         override fun onStart(owner: LifecycleOwner) {
             job = CoroutineScope(Dispatchers.Main).launch() {
                 while (isActive && lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+
                     if (WebSocketManager.isServiceStopping) {
                         checkIfConnected(onSuccess = {
                             delay_time = 15_000L
@@ -276,6 +287,11 @@ class AppViewModel : ViewModel() {
                                 invokeIfDisconnected()
                             })
                     }
+                    if(isWearableConnected(context)){
+                        invokeIfWatchConnected()
+                    }else{
+                        invokeIfWatchDisconnected()
+                    }
                     delay(delay_time)
                 }
             }
@@ -283,6 +299,74 @@ class AppViewModel : ViewModel() {
 
         override fun onStop(owner: LifecycleOwner) {
             job?.cancel()
+        }
+    }
+
+    private suspend fun isWearableConnected(context: Context): Boolean {
+        return try {
+            val nodes: List<Node> = Wearable.getNodeClient(context).connectedNodes.await()
+            nodes.isNotEmpty()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun sendStartSOSToWear(context: Context) {
+        val nodeId = getConnectedNodeId(context)
+        if (nodeId != null)
+            Wearable.getMessageClient(context)
+                .sendMessage(nodeId, "/start_sos", "started".toByteArray())
+                .addOnSuccessListener {
+                    Log.d("WearApp", "start sent to Wear OS")
+                }
+                .addOnFailureListener {
+                    Log.e("WearApp", "Failed to send start status to wear Os", it)
+                }
+        else
+            Log.e("WearApp", "Failed to send start status to Wear OS, no node")
+
+    }
+
+    suspend fun sendStopSOSToWear(context: Context) {
+        val nodeId = getConnectedNodeId(context)
+        if (nodeId != null)
+            Wearable.getMessageClient(context)
+                .sendMessage(nodeId, "/end_sos", "stopped".toByteArray())
+                .addOnSuccessListener {
+                    Log.d("WearApp", "stop status sent to Wear OS")
+                }
+                .addOnFailureListener {
+                    Log.e("WearApp", "Failed to send stop status to wear Os", it)
+                }
+        else
+            Log.e("WearApp", "Failed to send stop status to Wear OS, no node")
+    }
+    suspend fun sendLoggedInToWear(context: Context, isLoggedIn:Boolean) {
+        val message = if (isLoggedIn) "valid" else "invalid"
+        val nodeId = getConnectedNodeId(context)
+        if (nodeId != null)
+            Wearable.getMessageClient(context)
+                .sendMessage(nodeId, "/token_status", message.toByteArray())
+        else
+            Log.e("WearApp", "Failed to send stop status to Wear OS, no node")
+    }
+
+    private suspend fun getConnectedNodeId(context: Context): String? {
+        return suspendCoroutine { continuation ->
+            val nodeClient = Wearable.getNodeClient(context)
+            nodeClient.connectedNodes.addOnSuccessListener { nodes ->
+                if (nodes.isNotEmpty()) {
+                    Log.d("WearApp", "Connected node found: ${nodes[0].id}")
+                    continuation.resume(nodes[0].id)
+                } else {
+                    Log.e("WearApp", "No connected nodes found")
+                    continuation.resumeWithException(Exception("No connected nodes found"))
+                }
+            }.addOnFailureListener {
+                Log.e("WearApp", "Failed to get connected nodes", it)
+                continuation.resumeWithException(it)
+            }
         }
     }
 }

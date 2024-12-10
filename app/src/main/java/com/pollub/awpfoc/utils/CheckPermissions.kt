@@ -57,6 +57,9 @@ fun CheckPermissions(context: Context, requestPermissionsLauncher:ActivityResult
     val permissionsToRequest = mutableListOf<String>()
 
     checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, context, permissionsToRequest)
+    checkPermission(Manifest.permission.BLUETOOTH_SCAN, context, permissionsToRequest)
+    checkPermission(Manifest.permission.BLUETOOTH_ADVERTISE, context, permissionsToRequest)
+    checkPermission(Manifest.permission.BLUETOOTH_CONNECT, context, permissionsToRequest)
     checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, context, permissionsToRequest)
     checkPermission(Manifest.permission.INTERNET, context, permissionsToRequest)
     checkPermission(Manifest.permission.POST_NOTIFICATIONS, context, permissionsToRequest)
