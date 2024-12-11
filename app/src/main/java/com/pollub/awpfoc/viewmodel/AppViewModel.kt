@@ -21,7 +21,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
@@ -372,11 +371,11 @@ class AppViewModel : ViewModel() {
                     continuation.resume(nodes[0].id)
                 } else {
                     Log.e("WearApp", "No connected nodes found")
-                    continuation.resumeWithException(Exception("No connected nodes found"))
+                    continuation.resume(null)
                 }
             }.addOnFailureListener {
                 Log.e("WearApp", "Failed to get connected nodes", it)
-                continuation.resumeWithException(it)
+                continuation.resume(null)
             }
         }
     }

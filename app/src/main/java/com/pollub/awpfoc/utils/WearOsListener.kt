@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class WearOsListener : WearableListenerService() {
@@ -129,11 +128,11 @@ class WearOsListener : WearableListenerService() {
                     continuation.resume(nodes[0].id)
                 } else {
                     Log.e("WearApp", "No connected nodes found")
-                    continuation.resumeWithException(Exception("No connected nodes found"))
+                    continuation.resume(null)
                 }
             }.addOnFailureListener {
                 Log.e("WearApp", "Failed to get connected nodes", it)
-                continuation.resumeWithException(it)
+                continuation.resume(null)
             }
         }
     }

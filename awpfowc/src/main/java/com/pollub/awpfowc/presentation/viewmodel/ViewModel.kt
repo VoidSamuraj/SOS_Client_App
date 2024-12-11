@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import com.google.android.gms.wearable.Wearable
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class ViewModel(application: Application) : AndroidViewModel(application) {
@@ -141,7 +140,7 @@ class ViewModel(application: Application) : AndroidViewModel(application) {
                 if (nodes.isNotEmpty()) {
                     continuation.resume(nodes[0].id)
                 } else {
-                    continuation.resumeWithException(Exception("No connected nodes found"))
+                    continuation.resume(null)
                 }
             }
         }
