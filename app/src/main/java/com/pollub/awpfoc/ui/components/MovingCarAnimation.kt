@@ -48,9 +48,11 @@ fun PatrolStatus(
 
     val dynamicEasing = CubicBezierEasing(0.5f, 0f, 0.5f, 1f)
 
-    LaunchedEffect(boxWidth) {
-        if (boxWidth.value > 0) {
+    LaunchedEffect(status, boxWidth) {
+        if (boxWidth.value > 0  && status == AppViewModel.Companion.ReportState.CONFIRMED) {
             scope.launch {
+                carPositionX.stop()
+                carPositionX.snapTo(0f)
                 carPositionX.animateTo(
                     targetValue = boxWidth.value - iconSizePx,
                     animationSpec = infiniteRepeatable(
