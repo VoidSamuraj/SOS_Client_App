@@ -47,8 +47,6 @@ object SharedPreferencesManager {
      * @param customerInfo The Customer object containing user details to save.
      */
     fun saveUser(customerInfo: Customer) {
-        println("NOWEDANE")
-        println(customerInfo)
         sharedPreferences.edit()
             .putString(KEY_ID, customerInfo.id.toString())
             .putString(LOGIN_ID, customerInfo.login.toString())

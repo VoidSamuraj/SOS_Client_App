@@ -35,6 +35,11 @@ object NetworkClient {
     val userRepository: UserRepository by lazy {
         UserRepository()
     }
+    private var baseUrl = BASE_URL
+
+    fun setBaseUrl(url: String) {
+        baseUrl = url
+    }
 
     // OkHttpClient instance configured with SSL settings and request interceptors.
     private val client by lazy {
@@ -71,7 +76,7 @@ object NetworkClient {
      */
     val instance: ApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
