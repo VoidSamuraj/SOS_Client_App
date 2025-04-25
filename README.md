@@ -20,10 +20,23 @@ It works with <a href="https://github.com/VoidSamuraj/SOS_Server" target="_blank
 
 ![client](https://github.com/user-attachments/assets/cfb9ec30-0d2a-44ed-ab9a-646be7b1a207)
 
+<table style="width:100%;">
+  <tr>
+    <td style="width:50%;"><img src="https://github.com/user-attachments/assets/ac74f52f-48c8-402c-9710-ead76008ad91" style="width:100%;"/></td>
+    <td style="width:50%;"><img src="https://github.com/user-attachments/assets/8c3f6921-5686-473f-b3f3-bcc03b55f73d" style="width:100%;"/></td>
+  </tr>
+  <tr>
+    <td style="width:50%;"><img src="https://github.com/user-attachments/assets/f2039436-792a-4904-b65d-3ac420764ee0" style="width:100%;"/></td>
+    <td style="width:50%;"><img src="https://github.com/user-attachments/assets/fbc5aa91-df48-4831-8f41-ad30f6bdc7ae" style="width:100%;"/></td>
+  </tr>
+</table>
+
+
 ### Key Features:
 - **SOS Button**: The client can send an emergency request by pressing the red SOS button, which will immediately alert the security team.
 - **Location Updates**: The client’s location is updated at short intervals for accurate tracking and quick response.
 - **Cancel or Direct Call**: The client can cancel the SOS alert or directly call the alarm center if needed.
+- **Smartwatch application**: The application can be used also by smartwatch with Wear OS. It needs to be connected to phone application via bluetooth.
 
 ## Technologies:
 - **Kotlin**: A statically typed programming language compatible with Java, ideal for cross-platform development.
