@@ -19,8 +19,11 @@ The SOS application is designed to enhance the efficiency of security companies 
 
 It integrates with the <a href="https://github.com/VoidSamuraj/SOS_Server" target="_blank">SOS Server</a> and <a href="https://github.com/VoidSamuraj/SOS_Guard_App" target="_blank">SOS Guard</a> applications.
 
-![client](https://github.com/user-attachments/assets/cfb9ec30-0d2a-44ed-ab9a-646be7b1a207)
+![Client](https://github.com/user-attachments/assets/bf74424c-8580-411a-ad5f-e62a9904d54a)
 ![watch](https://github.com/user-attachments/assets/56626353-005d-4759-8d10-57b3f69cc37e)
+[![demonstration](https://github.com/user-attachments/assets/68f8c6db-444c-475c-ace8-9dc3e43c7007)](https://drive.google.com/file/d/1KK_gapHuLEk1Xl45qQ2u7odBc6tHN9-Z/view?usp=drive_link){:target="_blank"}
+
+
 
 ### **Key Features:**
 - **SOS Button**: Instantly alerts the security team with a press of the red SOS button.
