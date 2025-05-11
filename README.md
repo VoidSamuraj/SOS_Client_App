@@ -22,7 +22,7 @@ It integrates with the <a href="https://github.com/VoidSamuraj/SOS_Server" targe
 ![Client](https://github.com/user-attachments/assets/bf74424c-8580-411a-ad5f-e62a9904d54a)
 ![watch](https://github.com/user-attachments/assets/56626353-005d-4759-8d10-57b3f69cc37e)
 <a href="https://drive.google.com/file/d/1KK_gapHuLEk1Xl45qQ2u7odBc6tHN9-Z/view?usp=drive_link" target="_blank">
-  <img src="https://github.com/user-attachments/assets/3ac1f827-0db8-45a4-9767-167c3020b527" alt="demonstration" />
+  <img src="https://github.com/user-attachments/assets/32cc6229-5306-42a7-bd9b-eae5ddda5b1f" alt="demonstration" />
 </a>
 
 
